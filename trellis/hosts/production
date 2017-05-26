@@ -2,7 +2,7 @@
 # List each machine only once per [group], even if it will host multiple sites.
 
 [production]
-207.154.221.32
+coolcars.gr
 
 [web]
-207.154.221.32
+coolcars.gr
