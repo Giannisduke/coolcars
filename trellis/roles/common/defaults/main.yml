@@ -1,0 +1,20 @@
+ansible_requirements:
+  - version: 2.0.2.0
+    operator: '>='
+  - version: 2.1.0.0
+    operator: '!='
+
+ntp_timezone: Etc/UTC
+
+apt_packages_default:
+  - python-software-properties
+  - python-pycurl
+  - build-essential
+  - python-mysqldb
+  - curl
+  - git-core
+  - dbus
+  - libnss-myhostname
+
+apt_packages_custom: []
+apt_packages_install: "{{ apt_packages_default + apt_packages_custom }}"
