@@ -1,2 +1,0 @@
-var FormStuff={init:function(){this.applyConditionalRequired(),this.bindUIActions()},bindUIActions:function(){jQuery("input[type='radio'], input[type='checkbox']").on("change",this.applyConditionalRequired)},applyConditionalRequired:function(){jQuery(".require-if-active").each(function(){var i=jQuery(this);jQuery(i.data("require-pair")).is(":checked")?i.prop("required",!0):i.prop("required",!1)})}};FormStuff.init();
-//# sourceMappingURL=conditional-field.js.map
