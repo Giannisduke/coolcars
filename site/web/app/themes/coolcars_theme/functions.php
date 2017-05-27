@@ -510,23 +510,23 @@ add_action( 'woocommerce_before_single_product_summary', 'woocommerce_output_pro
 function woocommerce_tabs_header() {
 
   if (sizeof(WC()->cart->get_cart()) != 0) {
-    $wrap = get_template_part('templates/unit', 'tabs_2');
+    $wrap_header = get_template_part('templates/unit', 'tabs_2');
   } else {
-    $wrap = get_template_part('templates/unit', 'tabs');
+    $wrap_header = get_template_part('templates/unit', 'tabs');
   }
-  return $wrap;
+  return $wrap_header;
  }
  add_action( 'woocommerce_single_product_summary', 'woocommerce_tabs_header' , 15, 0 );
 
  function woocommerce_tabs_body() {
 
    if (sizeof(WC()->cart->get_cart()) != 0) {
-     $wrap = get_template_part('templates/unit', 'tabsbody_2');
+     $wrap_body = get_template_part('templates/unit', 'tabsbody_2');
 
    } else {
      get_template_part('templates/unit', 'tabsbody');
    }
-   return $wrap;
+   return $wrap_body;
   }
 add_action( 'woocommerce_single_product_summary', 'woocommerce_tabs_body' , 16, 0 );
 

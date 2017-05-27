@@ -29,7 +29,7 @@ cart
 <span class="navbar-toggler-icon"></span>
 </button>
 <div class="col-lg-3">
-<a href="#intro">
+<a href="https://coolcars.gr">
 
 <img src='<?php echo esc_url( get_theme_mod( 'themeslug_logo' ) ); ?>' alt='<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>'>
 
