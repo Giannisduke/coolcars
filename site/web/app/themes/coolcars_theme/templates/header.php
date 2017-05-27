@@ -37,32 +37,5 @@ cart
 </a>
 </div>
 
-  <div  id="navbarNavDropdown" class="navbar-collapse collapse">
-    <ul class="navbar-nav mr-auto">
-       <li class="nav-item active">
-
-       </li>
-     </ul>
-    <?php if ( has_nav_menu( 'primary' ) ) : ?>
-      <?php
-        wp_nav_menu( array(
-          'theme_location' => 'primary',
-
-        'menu_class'      => 'menu',
-        'menu_id'         => '',
-        'echo'            => true,
-        'fallback_cb'     => 'wp_page_menu',
-        'before'          => '',
-        'after'           => '',
-        'link_before'     => '',
-        'link_after'      => '',
-        'items_wrap'      => ' <ul class="navbar-nav">%3$s</ul>',
-        'depth'           => 0,
-          'menu_class'     => 'primary-menu',
-          'walker' => new IBenic_Walker()
-         ) );
-      ?>
-    </div>
     </div>
     </nav><!-- .main-navigation -->
-  <?php endif; ?>
