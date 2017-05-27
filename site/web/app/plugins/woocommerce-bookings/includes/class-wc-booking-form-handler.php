@@ -29,7 +29,7 @@ class WC_Booking_Form_Handler {
 
 			if ( $booking->has_status( 'cancelled' ) ) {
 				// Already cancelled - take no action
-			} elseif ( $booking_can_cancel && $booking->id == $booking_id && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'woocommerce-bookings-cancel_booking' ) ) {
+			} elseif ( $booking_can_cancel && $booking->get_id() == $booking_id && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( $_GET['_wpnonce'], 'woocommerce-bookings-cancel_booking' ) ) {
 				// Cancel the booking
 				$booking->update_status( 'cancelled' );
 				WC_Cache_Helper::get_transient_version( 'bookings', true );
@@ -37,7 +37,7 @@ class WC_Booking_Form_Handler {
 				// Message
 				wc_add_notice( apply_filters( 'woocommerce_booking_cancelled_notice', __( 'Your booking was cancelled.', 'woocommerce-bookings' ) ), apply_filters( 'woocommerce_booking_cancelled_notice_type', 'notice' ) );
 
-				do_action( 'woocommerce_bookings_cancelled_booking', $booking->id );
+				do_action( 'woocommerce_bookings_cancelled_booking', $booking->get_id() );
 			} elseif ( ! $booking_can_cancel ) {
 				wc_add_notice( __( 'Your booking can no longer be cancelled. Please contact us if you need assistance.', 'woocommerce-bookings' ), 'error' );
 			} else {

@@ -25,9 +25,11 @@ jQuery(document).ready(function($) {
 
 			var index = $('.wc-bookings-booking-form').index(this);
 			$form = $(this).closest('form');
+			var isEmptyCalendarSelection =  ! $form.find( "[name='wc_bookings_field_start_date_day']" ).val() &&
+										! $form.find( '#wc_bookings_field_start_date' ).val();
 
 			// Do not update if triggered by Product Addons and no date is selected.
-			if ( jQuery(e.target).hasClass('addon') && ! $form.find( '#wc_bookings_field_start_date' ).val() ) {
+			if ( jQuery(e.target).hasClass('addon') && isEmptyCalendarSelection ) {
 				return;
 			}
 
@@ -73,6 +75,8 @@ jQuery(document).ready(function($) {
 						$form.find('.single_add_to_cart_button').addClass('disabled');
 						console.log( code );
 					}
+
+					$( document.body ).trigger( 'wc_booking_form_changed' );
 				},
 				error: function() {
 					$form.find('.wc-bookings-booking-cost').hide();

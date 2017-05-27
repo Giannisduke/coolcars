@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 echo "= " . $email_heading . " =\n\n";
 
 if ( $booking->get_order() ) {
-	echo sprintf( __( 'Hello %s', 'woocommerce-bookings' ), $booking->get_order()->billing_first_name ) . "\n\n";
+	echo sprintf( __( 'Hello %s', 'woocommerce-bookings' ), ( is_callable( array( $booking->get_order(), 'get_billing_first_name' ) ) ? $booking->get_order()->get_billing_first_name() : $booking->get_order()->billing_first_name ) ) . "\n\n";
 }
 
 echo __(  'This is a reminder that your booking will take place tomorrow. The details of your booking are shown below.', 'woocommerce-bookings' ) . "\n\n";

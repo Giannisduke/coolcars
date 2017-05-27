@@ -14,7 +14,7 @@
 						<select id="notification_product_id" name="notification_product_id">
 							<option value=""><?php _e( 'Select a booking product...', 'woocommerce-bookings' ); ?></option>
 							<?php foreach ( $booking_products as $product ) : ?>
-								<option value="<?php echo $product->ID; ?>"><?php echo $product->post_title; ?></option>
+								<option value="<?php echo $product->get_id(); ?>"><?php echo $product->get_title(); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</td>

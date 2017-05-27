@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Booking Addons Screen
+ * Booking Addons Screen.
  */
 class WC_Bookings_Admin_Add_Ons {
 
@@ -12,7 +12,7 @@ class WC_Bookings_Admin_Add_Ons {
 	 * Constructor
 	 */
 	public function __construct() {
-		add_filter( 'woocommerce_addons_sections', array( $this, 'add_section' )  );
+		add_filter( 'woocommerce_addons_sections', array( $this, 'add_section' ) );
 	}
 
 	/**
@@ -24,7 +24,6 @@ class WC_Bookings_Admin_Add_Ons {
 		$sections['bookings']->endpoint = 'http://d3t0oesq8995hv.cloudfront.net/bookings-addons.json';
 		return $sections;
 	}
-
 }
 
 new WC_Bookings_Admin_Add_Ons();

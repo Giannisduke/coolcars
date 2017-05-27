@@ -1,21 +1,17 @@
 <?php
-/**
- * Admin functions for the bookings post type
- */
-
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;
 }
 
 if ( ! class_exists( 'WC_Bookings_CPT' ) ) :
 
 /**
- * WC_Admin_CPT_Product Class
+ * WC_Admin_CPT_Product Class.
  */
 class WC_Bookings_CPT {
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	public function __construct() {
 		$this->type = 'wc_booking';
@@ -42,53 +38,37 @@ class WC_Bookings_CPT {
 		add_action( 'load-edit.php', array( $this, 'bulk_action' ) );
 		add_action( 'admin_footer', array( $this, 'bulk_admin_footer' ), 10 );
 		add_action( 'admin_notices', array( $this, 'bulk_admin_notices' ) );
-
-		// Sync
-		add_action( 'woocommerce_booking_cancelled', array( $this, 'cancel_order' ) );
-		add_action( 'before_delete_post', array( $this, 'delete_post' ) );
-		add_action( 'wp_trash_post', array( $this, 'trash_post' ) );
-		add_action( 'untrash_post', array( $this, 'untrash_post' ) );
 	}
 
 	/**
 	 * Remove edit from the bulk actions.
 	 *
-	 * @access public
 	 * @param mixed $actions
 	 * @return array
 	 */
 	public function bulk_actions( $actions ) {
-
 		if ( isset( $actions['edit'] ) ) {
 			unset( $actions['edit'] );
 		}
-
 		return $actions;
 	}
 
 	/**
-	 * Add extra bulk action options to mark orders as complete or processing
+	 * Add extra bulk action options to mark orders as complete or processing.
 	 *
 	 * Using Javascript until WordPress core fixes: http://core.trac.wordpress.org/ticket/16031
-	 *
-	 * @access public
-	 * @return void
 	 */
 	public function bulk_admin_footer() {
 		global $post_type;
 
-		if ( $this->type == $post_type ) {
+		if ( $this->type === $post_type ) {
 			?>
 			<script type="text/javascript">
 				jQuery( document ).ready( function ( $ ) {
 					$( '<option value="confirm_bookings"><?php _e( 'Confirm bookings', 'woocommerce-bookings' )?></option>' ).appendTo( 'select[name="action"], select[name="action2"]' );
-
 					$( '<option value="unconfirm_bookings"><?php _e( 'Unconfirm bookings', 'woocommerce-bookings' )?></option>' ).appendTo( 'select[name="action"], select[name="action2"]' );
-
 					$( '<option value="cancel_bookings"><?php _e( 'Cancel bookings', 'woocommerce-bookings' )?></option>' ).appendTo( 'select[name="action"], select[name="action2"]' );
-
 					$( '<option value="mark_paid_bookings"><?php _e( 'Mark bookings as paid', 'woocommerce-bookings' )?></option>' ).appendTo( 'select[name="action"], select[name="action2"]' );
-
 					$( '<option value="mark_unpaid_bookings"><?php _e( 'Mark bookings as unpaid', 'woocommerce-bookings' )?></option>' ).appendTo( 'select[name="action"], select[name="action2"]' );
 				});
 			</script>
@@ -97,10 +77,7 @@ class WC_Bookings_CPT {
 	}
 
 	/**
-	 * Process the new bulk actions for changing order status
-	 *
-	 * @access public
-	 * @return void
+	 * Process the new bulk actions for changing order status.
 	 */
 	public function bulk_action() {
 		$wp_list_table = _get_list_table( 'WP_Posts_List_Table' );
@@ -127,8 +104,6 @@ class WC_Bookings_CPT {
 				$new_status = 'cancelled';
 				$report_action = 'bookings_cancelled';
 				break;
-			break;
-
 			default:
 				return;
 		}
@@ -151,10 +126,7 @@ class WC_Bookings_CPT {
 	}
 
 	/**
-	 * Show confirmation message that order status changed for number of orders
-	 *
-	 * @access public
-	 * @return void
+	 * Show confirmation message that order status changed for number of orders.
 	 */
 	public function bulk_admin_notices() {
 		global $post_type, $pagenow;
@@ -171,15 +143,15 @@ class WC_Bookings_CPT {
 
 	/**
 	 * Change title boxes in admin.
+	 *
 	 * @param  string $text
 	 * @param  object $post
 	 * @return string
 	 */
 	public function enter_title_here( $text, $post ) {
-		if ( $post->post_type == 'wc_booking' ) {
+		if ( 'wc_booking' === $post->post_type ) {
 			return __( 'Booking Title', 'woocommerce-bookings' );
 		}
-
 		return $text;
 	}
 
@@ -208,7 +180,7 @@ class WC_Bookings_CPT {
 	}
 
 	/**
-	 * Make product columns sortable
+	 * Make product columns sortable.
 	 *
 	 * https://gist.github.com/906872
 	 *
@@ -222,28 +194,29 @@ class WC_Bookings_CPT {
 			'booked_product' => 'booked_product',
 			'booking_status' => 'status',
 			'start_date'     => 'start_date',
-			'end_date'       => 'end_date'
+			'end_date'       => 'end_date',
 		);
 		return wp_parse_args( $custom, $columns );
 	}
 
 	/**
 	 * Define our custom columns shown in admin.
+	 *
 	 * @param  string $column
 	 * @global WC_Booking $booking
 	 */
 	public function custom_columns( $column ) {
 		global $post, $booking;
 
-		if ( empty( $booking ) || $booking->id != $post->ID ) {
-			$booking = get_wc_booking( $post->ID );
+		if ( ! is_a( $booking, 'WC_Booking' ) || $booking->get_id() !== $post->ID ) {
+			$booking = new WC_Booking( $post->ID );
 		}
 
-		$product  = $booking->get_product();
+		$product = $booking->get_product();
 
 		switch ( $column ) {
 			case 'booking_status' :
-				echo $booking->get_status( false );
+				echo '<span class="status-' . esc_attr( $booking->get_status() ) . ' tips" data-tip="' . esc_attr( wc_bookings_get_status_label( $booking->get_status() ) ) . '">' . esc_html( wc_bookings_get_status_label( $booking->get_status() ) ) . '</span>';
 				break;
 			case 'booking_id' :
 				printf( '<a href="%s">' . __( 'Booking #%d', 'woocommerce-bookings' ) . '</a>', admin_url( 'post.php?post=' . $post->ID . '&action=edit' ), $post->ID );
@@ -253,26 +226,13 @@ class WC_Bookings_CPT {
 					esc_html_e( 'N/A', 'woocommerce-bookings' );
 					break;
 				}
-
-				$persons = get_post_meta( $post->ID, '_booking_persons', true );
-				$total_persons = 0;
-				if ( ! empty( $persons ) && is_array( $persons ) ) {
-					foreach ( $persons as $person_count ) {
-						$total_persons = $total_persons + $person_count;
-					}
-				}
-
-				echo esc_html( $total_persons );
+				echo esc_html( array_sum( $booking->get_person_counts() ) );
 				break;
 			case 'customer':
 				$customer = $booking->get_customer();
 
-				if ( ! isset( $customer->user_id ) || 0 == $customer->user_id ) {
-					$order = $booking->get_order();
-					$guest_name = $order->billing_first_name . ' ' . $order->billing_last_name;
-					echo sprintf( _x( 'Guest(%s)', 'Guest string with name from booking order in brackets', 'woocommerce-bookings' ), $guest_name );
-				} elseif ( $customer ) {
-					echo '<a href="mailto:' .  $customer->email . '">' . $customer->name . '</a>';
+				if ( $customer->email && $customer->name ) {
+					echo '<a href="mailto:' . esc_attr( $customer->email ) . '">' . esc_html( $customer->name ) . '</a>';
 				} else {
 					echo '-';
 				}
@@ -281,19 +241,18 @@ class WC_Bookings_CPT {
 				$resource = $booking->get_resource();
 
 				if ( $product ) {
-					echo '<a href="' . admin_url( 'post.php?post=' . $product->id . '&action=edit' ) . '">' . $product->post->post_title . '</a>';
+					echo '<a href="' . admin_url( 'post.php?post=' . ( is_callable( array( $product, 'get_id' ) ) ? $product->get_id() : $product->id ) . '&action=edit' ) . '">' . $product->get_title() . '</a>';
+
 					if ( $resource ) {
-						echo ' (<a href="' . admin_url( 'post.php?post=' . $resource->ID . '&action=edit' ) . '">' . $resource->post_title . '</a>)';
+						echo ' (<a href="' . admin_url( 'post.php?post=' . $resource->get_id() . '&action=edit' ) . '">' . $resource->get_name() . '</a>)';
 					}
 				} else {
 					echo '-';
 				}
 				break;
 			case 'order':
-				$order = $booking->get_order();
-
-				if ( $order ) {
-					echo '<a href="' . admin_url( 'post.php?post=' . $order->id . '&action=edit' ) . '">#' . $order->get_order_number() . '</a> - ' . esc_html( wc_get_order_status_name( $order->get_status() ) );
+				if ( $order = $booking->get_order() ) {
+					echo '<a href="' . admin_url( 'post.php?post=' . ( is_callable( array( $order, 'get_id' ) ) ? $order->get_id() : $order->id ) . '&action=edit' ) . '">#' . $order->get_order_number() . '</a> - ' . esc_html( wc_get_order_status_name( $order->get_status() ) );
 				} else {
 					echo '-';
 				}
@@ -306,19 +265,19 @@ class WC_Bookings_CPT {
 				break;
 			case 'booking_actions' :
 				echo '<p>';
-				$actions = array();
-
-				$actions['view'] = array(
-					'url' 		=> admin_url( 'post.php?post=' . $post->ID . '&action=edit' ),
-					'name' 		=> __( 'View', 'woocommerce-bookings' ),
-					'action' 	=> "view"
+				$actions = array(
+					'view' => array(
+						'url'    => admin_url( 'post.php?post=' . $post->ID . '&action=edit' ),
+						'name'   => __( 'View', 'woocommerce-bookings' ),
+						'action' => 'view',
+					),
 				);
 
 				if ( in_array( $booking->get_status(), array( 'pending-confirmation' ) ) ) {
 					$actions['confirm'] = array(
-						'url' 		=> wp_nonce_url( admin_url( 'admin-ajax.php?action=wc-booking-confirm&booking_id=' . $post->ID ), 'wc-booking-confirm' ),
-						'name' 		=> __( 'Confirm', 'woocommerce-bookings' ),
-						'action' 	=> "confirm"
+						'url'    => wp_nonce_url( admin_url( 'admin-ajax.php?action=wc-booking-confirm&booking_id=' . $post->ID ), 'wc-booking-confirm' ),
+						'name'   => __( 'Confirm', 'woocommerce-bookings' ),
+						'action' => 'confirm',
 					);
 				}
 
@@ -333,7 +292,7 @@ class WC_Bookings_CPT {
 	}
 
 	/**
-	 * Product column orderby
+	 * Product column orderby.
 	 *
 	 * http://scribu.net/wordpress/custom-sortable-columns.html#comment-4732
 	 *
@@ -345,34 +304,34 @@ class WC_Bookings_CPT {
 		if ( isset( $vars['orderby'] ) ) {
 			if ( 'booking_id' == $vars['orderby'] ) {
 				$vars = array_merge( $vars, array(
-					'orderby' 	=> 'ID'
+					'orderby' => 'ID',
 				) );
 			}
 
 			if ( 'booked_product' == $vars['orderby'] ) {
 				$vars = array_merge( $vars, array(
-					'meta_key' 	=> '_booking_product_id',
-					'orderby' 	=> 'meta_value_num'
+					'meta_key' => '_booking_product_id',
+					'orderby'  => 'meta_value_num',
 				) );
 			}
 
 			if ( 'status' == $vars['orderby'] ) {
 				$vars = array_merge( $vars, array(
-					'orderby' 	=> 'post_status'
+					'orderby' => 'post_status',
 				) );
 			}
 
 			if ( 'start_date' == $vars['orderby'] ) {
 				$vars = array_merge( $vars, array(
-					'meta_key' 	=> '_booking_start',
-					'orderby' 	=> 'meta_value_num'
+					'meta_key' => '_booking_start',
+					'orderby'  => 'meta_value_num',
 				) );
 			}
 
 			if ( 'end_date' == $vars['orderby'] ) {
 				$vars = array_merge( $vars, array(
-					'meta_key' 	=> '_booking_end',
-					'orderby' 	=> 'meta_value_num'
+					'meta_key' => '_booking_end',
+					'orderby'  => 'meta_value_num',
 				) );
 			}
 		}
@@ -381,12 +340,12 @@ class WC_Bookings_CPT {
 	}
 
 	/**
-	 * Show a filter box
+	 * Show a filter box.
 	 */
 	public function booking_filters() {
 		global $typenow, $wp_query;
 
-		if ( $typenow != $this->type ) {
+		if ( $typenow !== $this->type ) {
 			return;
 		}
 
@@ -395,12 +354,12 @@ class WC_Bookings_CPT {
 		$products = WC_Bookings_Admin::get_booking_products();
 
 		foreach ( $products as $product ) {
-			$filters[ $product->ID ] = $product->post_title;
+			$filters[ $product->get_id() ] = $product->get_name();
 
-			$resources = wc_booking_get_product_resources( $product->ID );
+			$resources = $product->get_resources();
 
 			foreach ( $resources as $resource ) {
-				$filters[ $resource->ID ] = '&nbsp;&nbsp;&nbsp;' . $resource->post_title;
+				$filters[ $resource->get_id() ] = '&nbsp;&nbsp;&nbsp;' . $resource->get_name();
 			}
 		}
 
@@ -427,96 +386,103 @@ class WC_Bookings_CPT {
 	}
 
 	/**
-	 * Filter the products in admin based on options
+	 * Filter the products in admin based on options.
 	 *
 	 * @param mixed $query
 	 */
 	public function booking_filters_query( $query ) {
 		global $typenow, $wp_query;
 
-		if ( $typenow == $this->type ) {
+		if ( $typenow === $this->type ) {
 			if ( ! empty( $_REQUEST['filter_bookings'] ) && empty( $query->query_vars['suppress_filters'] ) ) {
 				$query->query_vars['meta_query'] = array(
 					array(
 						'key'   => get_post_type( $_REQUEST['filter_bookings'] ) === 'bookable_resource' ? '_booking_resource_id' : '_booking_product_id',
-						'value' => absint( $_REQUEST['filter_bookings'] )
-					)
+						'value' => absint( $_REQUEST['filter_bookings'] ),
+					),
 				);
 			}
 		}
 	}
 
 	/**
-	 * Search custom fields
+	 * Search custom fields.
 	 *
 	 * @param mixed $wp
 	 */
 	public function search_custom_fields( $wp ) {
 		global $pagenow, $wpdb;
 
-		if ( 'edit.php' != $pagenow || empty( $wp->query_vars['s'] ) || $wp->query_vars['post_type'] != $this->type ) {
+		if ( 'edit.php' != $pagenow || empty( $wp->query_vars['s'] ) || $wp->query_vars['post_type'] !== $this->type ) {
 			return $wp;
 		}
 
-		$search_fields = array_map( 'wc_clean', array(
-			'_billing_first_name',
-			'_billing_last_name',
-			'_billing_company',
-			'_billing_address_1',
-			'_billing_address_2',
-			'_billing_city',
-			'_billing_postcode',
-			'_billing_country',
-			'_billing_state',
-			'_billing_email',
-			'_billing_phone',
-			'_shipping_first_name',
-			'_shipping_last_name',
-			'_shipping_address_1',
-			'_shipping_address_2',
-			'_shipping_city',
-			'_shipping_postcode',
-			'_shipping_country',
-			'_shipping_state'
-		) );
+		$term = wc_clean( $_GET['s'] );
 
-		// Search orders
-		$order_ids = $wpdb->get_col(
-			$wpdb->prepare( "
-				SELECT post_id
-				FROM {$wpdb->postmeta}
-				WHERE meta_key IN ('" . implode( "','", $search_fields ) . "')
-				AND meta_value LIKE '%%%s%%'",
-				esc_attr( $_GET['s'] )
-			)
-		);
-		// ensure db query doesn't throw an error due to empty post_parent value
-		$order_ids = empty( $order_ids ) ? array( '-1' ) : $order_ids;
+		if ( is_numeric( $term ) ) {
+			$booking_ids = array( $term );
+		} elseif ( function_exists( 'wc_order_search' ) ) {
+			$order_ids   = wc_order_search( wc_clean( $_GET['s'] ) );
+			$booking_ids = $order_ids ? WC_Booking_Data_Store::get_booking_ids_from_order_id( $order_ids ) : array( 0 );
+		} else {
+			// @deprecated
+			$search_fields = array_map( 'wc_clean', array(
+				'_billing_first_name',
+				'_billing_last_name',
+				'_billing_company',
+				'_billing_address_1',
+				'_billing_address_2',
+				'_billing_city',
+				'_billing_postcode',
+				'_billing_country',
+				'_billing_state',
+				'_billing_email',
+				'_billing_phone',
+				'_shipping_first_name',
+				'_shipping_last_name',
+				'_shipping_address_1',
+				'_shipping_address_2',
+				'_shipping_city',
+				'_shipping_postcode',
+				'_shipping_country',
+				'_shipping_state',
+			) );
 
-		// Remove s - we don't want to search order name
-		unset( $wp->query_vars['s'] );
-
-		// so we know we're doing this
-		$booking_ids = array_merge(
-			$wpdb->get_col( "
-				SELECT ID FROM {$wpdb->posts}
-				WHERE post_parent IN (" . implode( ',', $order_ids ) . ");
-			"),
-			$wpdb->get_col(
+			// Search orders
+			$order_ids = $wpdb->get_col(
 				$wpdb->prepare( "
-					SELECT ID
-						FROM {$wpdb->posts}
-						WHERE post_title LIKE '%%%s%%'
-						OR ID = %d
-					;",
-					esc_attr( $_GET['s'] ),
-					absint( $_GET['s'] )
+					SELECT post_id
+					FROM {$wpdb->postmeta}
+					WHERE meta_key IN ('" . implode( "','", $search_fields ) . "')
+					AND meta_value LIKE '%%%s%%'",
+					esc_attr( $_GET['s'] )
 				)
-			),
-			array( 0 ) // so we don't get back all results for incorrect search
-		);
+			);
+			// ensure db query doesn't throw an error due to empty post_parent value
+			$order_ids = empty( $order_ids ) ? array( '-1' ) : $order_ids;
 
-		// Search by found posts
+			// so we know we're doing this
+			$booking_ids = array_merge(
+				$wpdb->get_col( "
+					SELECT ID FROM {$wpdb->posts}
+					WHERE post_parent IN (" . implode( ',', $order_ids ) . ");
+				"),
+				$wpdb->get_col(
+					$wpdb->prepare( "
+						SELECT ID
+							FROM {$wpdb->posts}
+							WHERE post_title LIKE '%%%s%%'
+							OR ID = %d
+						;",
+						esc_attr( $_GET['s'] ),
+						absint( $_GET['s'] )
+					)
+				),
+				array( 0 ) // so we don't get back all results for incorrect search
+			);
+		}
+
+		$wp->query_vars['s']              = false;
 		$wp->query_vars['post__in']       = $booking_ids;
 		$wp->query_vars['booking_search'] = true;
 	}
@@ -524,14 +490,13 @@ class WC_Bookings_CPT {
 	/**
 	 * Change the label when searching orders.
 	 *
-	 * @access public
 	 * @param mixed $query
 	 * @return string
 	 */
 	public function search_label( $query ) {
 		global $pagenow, $typenow;
 
-		if ( 'edit.php' != $pagenow ) {
+		if ( 'edit.php' !== $pagenow ) {
 			return $query;
 		}
 
@@ -543,102 +508,7 @@ class WC_Bookings_CPT {
 			return $query;
 		}
 
-		return $_GET['s'];
-	}
-
-	/**
-	 * Cancel order with bookings
-	 * @param  int $booking_id
-	 */
-	public function cancel_order( $booking_id ) {
-		global $wpdb;
-
-		// Prevents infinite loop during synchronization
-		update_post_meta( $booking_id, '_booking_status_sync', true );
-
-		$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_parent FROM {$wpdb->posts} WHERE ID = %d", $booking_id ) );
-
-		$order = wc_get_order( $order_id );
-
-		if ( '' != $order->id && false == get_post_meta( $order->id, '_booking_status_sync', true ) ) {
-
-			// Only cancel if the order has 1 booking
-			if ( 1 === count( $order->get_items() ) ) {
-				$order->update_status( 'cancelled' );
-			}
-		}
-
-		delete_post_meta( $booking_id, '_booking_status_sync' );
-	}
-
-	/**
-	 * Removes parent order to the booking being deleted.
-	 *
-	 * @param mixed $booking_id ID of post being deleted
-	 */
-	public function delete_post( $booking_id ) {
-		if ( ! current_user_can( 'delete_posts' ) ) {
-			return;
-		}
-
-		if ( $booking_id > 0 && $this->type == get_post_type( $booking_id ) ) {
-			global $wpdb;
-
-			// Prevents infinite loop during synchronization
-			update_post_meta( $booking_id, '_booking_delete_sync', true );
-
-			$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_parent FROM {$wpdb->posts} WHERE ID = %d", $booking_id ) );
-
-			if ( '' != $order_id && false == get_post_meta( $order_id, '_booking_delete_sync', true ) ) {
-				wp_delete_post( $order_id, true );
-			}
-
-			delete_post_meta( $booking_id, '_booking_delete_sync' );
-		}
-	}
-
-	/**
-	 * Trash order with bookings
-	 *
-	 * @param mixed $booking_id
-	 */
-	public function trash_post( $booking_id ) {
-		if ( $booking_id > 0 && $this->type == get_post_type( $booking_id ) ) {
-			global $wpdb;
-
-			// Prevents infinite loop during synchronization
-			update_post_meta( $booking_id, '_booking_trash_sync', true );
-
-			$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_parent FROM {$wpdb->posts} WHERE ID = %d", $booking_id ) );
-
-			if ( '' != $order_id && false == get_post_meta( $order_id, '_booking_trash_sync', true ) ) {
-				wp_trash_post( $order_id );
-			}
-
-			delete_post_meta( $booking_id, '_booking_trash_sync' );
-		}
-	}
-
-	/**
-	 * Untrash order with bookings
-	 *
-	 * @param mixed $booking_id
-	 */
-	public function untrash_post( $booking_id ) {
-		if ( $booking_id > 0 && $this->type == get_post_type( $booking_id ) ) {
-			global $wpdb;
-
-			// Prevents infinite loop during synchronization
-			update_post_meta( $booking_id, '_booking_untrash_sync', true );
-
-			$order_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_parent FROM {$wpdb->posts} WHERE ID = %d", $booking_id ) );
-
-			if ( '' != $order_id && false == get_post_meta( $order_id, '_booking_trash_sync', true ) ) {
-				wp_untrash_post( $order_id );
-			}
-
-			delete_post_meta( $booking_id, '_booking_untrash_sync' );
-		}
+		return wc_clean( $_GET['s'] );
 	}
 }
 

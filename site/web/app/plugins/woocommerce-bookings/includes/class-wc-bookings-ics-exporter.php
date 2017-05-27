@@ -45,7 +45,7 @@ class WC_Bookings_ICS_Exporter {
 	 */
 	public function get_booking_ics( $booking ) {
 		$product          = $booking->get_product();
-		$this->file_path  = $this->get_file_path( $booking->id . '-' . $product->get_title() );
+		$this->file_path  = $this->get_file_path( $booking->get_id() . '-' . $product->get_title() );
 		$this->bookings[] = $booking;
 
 		// Create the .ics
@@ -96,22 +96,38 @@ class WC_Bookings_ICS_Exporter {
 	 * @return void
 	 */
 	protected function create() {
+		// @codingStandardIgnoreStart
 		$handle = @fopen( $this->file_path, 'w' );
 		$ics = $this->generate();
 		@fwrite( $handle, $ics );
 		@fclose( $handle );
+		// @codingStandardIgnoreEnd
 	}
 
 	/**
 	 * Format the date
 	 *
-	 * @param  int  $timestamp
-	 * @param  bool $all_day
+	 * @version 1.10.0
 	 *
-	 * @return string
+	 * @param int        $timestamp Timestamp to format.
+	 * @param WC_Booking $booking   Booking object.
+	 *
+	 * @return string Formatted date for ICS.
 	 */
-	protected function format_date( $timestamp, $all_day = false ) {
-		$pattern = ( $all_day ) ? 'Ymd' : 'Ymd\THis';
+	protected function format_date( $timestamp, $booking = null ) {
+		$pattern = 'Ymd\THis';
+
+		if ( $booking ) {
+			$pattern = ( $booking->is_all_day() ) ? 'Ymd' : $pattern;
+
+			// If we're working on the end timestamp
+			if ( $booking->get_end() === $timestamp ) {
+				// If bookings are more than 1 day, ics format for the end date should be the day after the booking ends
+				if ( strtotime( 'midnight', $booking->get_start() ) !== strtotime( 'midnight', $booking->get_end() ) ) {
+					$timestamp += 86400;
+				}
+			}
+		}
 
 		return date( $pattern, $timestamp );
 	}
@@ -151,10 +167,10 @@ class WC_Bookings_ICS_Exporter {
 
 		foreach ( $this->bookings as $booking ) {
 			$product     = $booking->get_product();
-			$all_day     = $booking->is_all_day();
 			$url         = ( $booking->get_order() ) ? $booking->get_order()->get_view_order_url() : '';
-			$summary     = '#' . $booking->id . ' - ' . $product->get_title();
+			$summary     = '#' . $booking->get_id() . ' - ' . $product->get_title();
 			$description = '';
+			$date_prefix = ( $booking->is_all_day() ) ? ';VALUE=DATE:' : ':';
 
 			if ( $resource = $booking->get_resource() ) {
 				$description .= __( 'Resource #', 'woocommerce-bookings' ) . $resource->ID . ' - ' . $resource->post_title . '\n\n';
@@ -167,26 +183,28 @@ class WC_Bookings_ICS_Exporter {
 					}
 
 					$person_type = ( 0 < $id ) ? get_the_title( $id ) : __( 'Person(s)', 'woocommerce-bookings' );
-					$description .= sprintf( __( '%s: %d', 'woocommerce-bookings'), $person_type, $qty ) . '\n';
+					$description .= sprintf( __( '%1$s: %2$d', 'woocommerce-bookings' ), $person_type, $qty ) . '\n';
 				}
 
 				$description .= '\n';
 			}
 
-			if ( '' != $product->post->post_excerpt ) {
+			$post_excerpt = get_post( $product->get_id() )->post_excerpt;
+
+			if ( '' !== $post_excerpt ) {
 				$description .= __( 'Booking description:', 'woocommerce-bookings' ) . '\n';
-				$description .= wp_kses( $product->post->post_excerpt, array() );
+				$description .= wp_kses( $post_excerpt, array() );
 			}
 
 			$ics .= 'BEGIN:VEVENT' . $this->eol;
-			$ics .= 'DTEND:' . $this->format_date( $booking->end, $all_day ) . $this->eol;
-			$ics .= 'UID:' . $this->uid_prefix . $booking->id . $this->eol;
+			$ics .= 'DTEND' . $date_prefix . $this->format_date( $booking->get_end(), $booking ) . $this->eol;
+			$ics .= 'UID:' . $this->uid_prefix . $booking->get_id() . $this->eol;
 			$ics .= 'DTSTAMP:' . $this->format_date( time() ) . $this->eol;
 			$ics .= 'LOCATION:' . $this->eol;
-			$ics .= 'DESCRIPTION:' . $this->sanitize_string( $description )  . $this->eol;
+			$ics .= 'DESCRIPTION:' . $this->sanitize_string( $description ) . $this->eol;
 			$ics .= 'URL;VALUE=URI:' . $this->sanitize_string( $url ) . $this->eol;
 			$ics .= 'SUMMARY:' . $this->sanitize_string( $summary ) . $this->eol;
-			$ics .= 'DTSTART:' . $this->format_date( $booking->start, $all_day ) . $this->eol;
+			$ics .= 'DTSTART' . $date_prefix . $this->format_date( $booking->get_start(), $booking ) . $this->eol;
 			$ics .= 'END:VEVENT' . $this->eol;
 		}
 

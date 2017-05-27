@@ -26,7 +26,7 @@ class WC_Bookings_Gateway extends WC_Payment_Gateway {
 	 * Admin page.
 	 */
 	public function admin_options() {
-		$title = ( ! empty( $this->method_title ) ) ? $this->method_title : __( 'Settings', 'woocommerce-bookings' ) ;
+		$title = ( ! empty( $this->method_title ) ) ? $this->method_title : __( 'Settings', 'woocommerce-bookings' );
 
 		echo '<h3>' . $title . '</h3>';
 
@@ -64,19 +64,16 @@ class WC_Bookings_Gateway extends WC_Payment_Gateway {
 	public function process_payment( $order_id ) {
 		$order = new WC_Order( $order_id );
 
-		// Add meta
-		update_post_meta( $order_id, '_booking_order', '1' );
-
 		// Add custom order note.
 		$order->add_order_note( __( 'This order is awaiting confirmation from the shop manager', 'woocommerce-bookings' ) );
 
 		// Remove cart
 		WC()->cart->empty_cart();
 
-		// Return thankyou redirect
+		// Return thankyou redirect.
 		return array(
-			'result' 	=> 'success',
-			'redirect'	=> $this->get_return_url( $order )
+			'result'   => 'success',
+			'redirect' => $this->get_return_url( $order )
 		);
 	}
 

@@ -50,8 +50,8 @@
 			</div>
 			<script type="text/javascript">
 				jQuery(".tablenav select").change(function() {
-	     			jQuery("#mainform").submit();
-	   			});
+					 jQuery("#mainform").submit();
+				   });
 			</script>
 		</div>
 
@@ -66,9 +66,9 @@
 			<tbody>
 				<tr>
 					<?php
-						$timestamp = $start_timestamp;
+						$timestamp = $start_time;
 						$index     = 0;
-						while ( $timestamp <= $end_timestamp ) :
+						while ( $timestamp <= $end_time ) :
 							?>
 							<td width="14.285%" class="<?php
 							if ( date( 'n', $timestamp ) != absint( $month ) ) {

@@ -39,20 +39,20 @@
 			<script type="text/javascript">
 				jQuery(function() {
 					jQuery(".tablenav select, .tablenav input").change(function() {
-		     			jQuery("#mainform").submit();
-		   			});
-		   			jQuery( '.calendar_day' ).datepicker({
+						 jQuery("#mainform").submit();
+					   });
+					   jQuery( '.calendar_day' ).datepicker({
 						dateFormat: 'yy-mm-dd',
 						numberOfMonths: 1,
 					});
 					// Tooltips
 					jQuery(".bookings li").tipTip({
-				    	'attribute' : 'data-tip',
-				    	'fadeIn' : 50,
-				    	'fadeOut' : 50,
-				    	'delay' : 200
-				    });
-		   		});
+						'attribute' : 'data-tip',
+						'fadeIn' : 50,
+						'fadeOut' : 50,
+						'delay' : 200
+					});
+				   });
 			</script>
 		</div>
 

@@ -15,7 +15,12 @@ class WC_Product_Booking_Resource {
 	 * Constructor
 	 */
 	public function __construct( $post, $product_id = 0 ) {
-		$this->resource   = $post;
+		if ( is_numeric( $post ) ) {
+			$this->resource   = get_post( $post );
+		} else {
+			$this->resource   = $post;
+		}
+
 		$this->product_id = $product_id;
 	}
 
@@ -81,7 +86,7 @@ class WC_Product_Booking_Resource {
 		$costs = get_post_meta( $this->product_id, '_resource_base_costs', true );
 		$cost  = isset( $costs[ $this->get_id() ] ) ? $costs[ $this->get_id() ] : '';
 
-		return $cost;
+		return (float) $cost;
 	}
 
 	/**
@@ -92,6 +97,6 @@ class WC_Product_Booking_Resource {
 		$costs = get_post_meta( $this->product_id, '_resource_block_costs', true );
 		$cost  = isset( $costs[ $this->get_id() ] ) ? $costs[ $this->get_id() ] : '';
 
-		return $cost;
+		return (float) $cost;
 	}
 }

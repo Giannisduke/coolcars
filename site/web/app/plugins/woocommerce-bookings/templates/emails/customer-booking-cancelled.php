@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php do_action( 'woocommerce_email_header', $email_heading ); ?>
 
 <?php if ( $booking->get_order() ) : ?>
-	<p><?php printf( __( 'Hello %s', 'woocommerce-bookings' ), $booking->get_order()->billing_first_name ); ?></p>
+	<p><?php printf( __( 'Hello %s', 'woocommerce-bookings' ), ( is_callable( array( $booking->get_order(), 'get_billing_first_name' ) ) ? $booking->get_order()->get_billing_first_name() : $booking->get_order()->billing_first_name ) ); ?></p>
 <?php endif; ?>
 
 <p><?php _e( 'We are sorry to say that your booking could not be confirmed and has been cancelled. The details of the cancelled booking can be found below.', 'woocommerce-bookings' ); ?></p>

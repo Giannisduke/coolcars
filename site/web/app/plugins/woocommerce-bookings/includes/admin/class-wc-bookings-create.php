@@ -1,27 +1,30 @@
 <?php
 /**
- * Create new bookings page
+ * Create new bookings page.
  */
 class WC_Bookings_Create {
 
+	/**
+	 * Stores errors.
+	 *
+	 * @var array
+	 */
 	private $errors = array();
 
 	/**
-	 * Output the form
+	 * Output the form.
 	 */
 	public function output() {
 		$this->errors = array();
 		$step         = 1;
 
 		try {
-
 			if ( ! empty( $_POST ) && ! check_admin_referer( 'create_booking_notification' ) ) {
 				throw new Exception( __( 'Error - please try again', 'woocommerce-bookings' ) );
 			}
 
 			if ( ! empty( $_POST['create_booking'] ) ) {
-
-				$customer_id         = absint( $_POST['customer_id'] );
+				$customer_id         = isset( $_POST['customer_id'] ) ? absint( $_POST['customer_id'] ) : 0;
 				$bookable_product_id = absint( $_POST['bookable_product_id'] );
 				$booking_order       = wc_clean( $_POST['booking_order'] );
 
@@ -29,7 +32,7 @@ class WC_Bookings_Create {
 					throw new Exception( __( 'Please choose a bookable product', 'woocommerce-bookings' ) );
 				}
 
-				if ( $booking_order === 'existing' ) {
+				if ( 'existing' === $booking_order ) {
 					$order_id      = absint( $_POST['booking_order_id'] );
 					$booking_order = $order_id;
 
@@ -38,12 +41,11 @@ class WC_Bookings_Create {
 					}
 				}
 
-				$step++;
+				$step ++;
 				$product      = wc_get_product( $bookable_product_id );
 				$booking_form = new WC_Booking_Form( $product );
 
 			} elseif ( ! empty( $_POST['create_booking_2'] ) ) {
-
 				$customer_id         = absint( $_POST['customer_id'] );
 				$bookable_product_id = absint( $_POST['bookable_product_id'] );
 				$booking_order       = wc_clean( $_POST['booking_order'] );
@@ -52,31 +54,27 @@ class WC_Bookings_Create {
 				$booking_data        = $booking_form->get_posted_data( $_POST );
 				$booking_cost        = ( $cost = $booking_form->calculate_booking_cost( $_POST ) ) && ! is_wp_error( $cost ) ? number_format( $cost, 2, '.', '' ) : 0;
 				$create_order        = false;
+				$order_id            = 0;
+				$item_id             = 0;
 
 				if ( 'yes' === get_option( 'woocommerce_prices_include_tax' ) ) {
-					if ( version_compare( WOOCOMMERCE_VERSION, '2.3', '<' ) ) {
-						$base_tax_rates = WC_Tax::get_shop_base_rate( $product->tax_class );
-					} else {
-						$base_tax_rates = WC_Tax::get_base_tax_rates( $product->tax_class );
-					}
+					$base_tax_rates = WC_Tax::get_base_tax_rates( $product->tax_class );
 					$base_taxes     = WC_Tax::calc_tax( $booking_cost, $base_tax_rates, true );
 					$booking_cost   = round( $booking_cost - array_sum( $base_taxes ), absint( get_option( 'woocommerce_price_num_decimals' ) ) );
 				}
 
-				// Data to go into the booking
-				$new_booking_data = array(
-					'user_id'     => $customer_id,
-					'product_id'  => $product->id,
-					'resource_id' => isset( $booking_data['_resource_id'] ) ? $booking_data['_resource_id'] : '',
-					'persons'     => $booking_data['_persons'],
-					'cost'        => $booking_cost,
-					'start_date'  => $booking_data['_start_date'],
-					'end_date'    => $booking_data['_end_date'],
-					'all_day'     => $booking_data['_all_day'] ? 1 : 0
+				$props = array(
+					'customer_id'   => $customer_id,
+					'product_id'    => is_callable( array( $product, 'get_id' ) ) ? $product->get_id() : $product->id,
+					'resource_id'   => isset( $booking_data['_resource_id'] ) ? $booking_data['_resource_id'] : '',
+					'person_counts' => $booking_data['_persons'],
+					'cost'          => $booking_cost,
+					'start'         => $booking_data['_start_date'],
+					'end'           => $booking_data['_end_date'],
+					'all_day'       => $booking_data['_all_day'] ? true : false,
 				);
 
-				// Create order
-				if ( $booking_order === 'new' ) {
+				if ( 'new' === $booking_order ) {
 					$create_order = true;
 					$order_id     = $this->create_order( $booking_cost, $customer_id );
 
@@ -92,52 +90,71 @@ class WC_Bookings_Create {
 
 					$order = new WC_Order( $order_id );
 
-					update_post_meta( $order_id, '_order_total', $order->get_total() + $booking_cost );
-					update_post_meta( $order_id, '_booking_order', '1' );
+					if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+						update_post_meta( $order_id, '_order_total', $order->get_total() + $booking_cost );
+					} else {
+						$order->set_total( $order->get_total( 'edit' ) + $booking_cost );
+						$order->save();
+					}
 
-                                        do_action( 'woocommerce_bookings_create_booking_page_add_order_item', $order_id );
-				} else {
-					$order_id = 0;
+					do_action( 'woocommerce_bookings_create_booking_page_add_order_item', $order_id );
 				}
 
 				if ( $order_id ) {
-		           	$item_id  = wc_add_order_item( $order_id, array(
-				 		'order_item_name' 		=> $product->get_title(),
-				 		'order_item_type' 		=> 'line_item'
-				 	) );
+					$item_id  = wc_add_order_item( $order_id, array(
+						'order_item_name' => $product->get_title(),
+						'order_item_type' => 'line_item',
+					) );
 
-				 	if ( ! $item_id ) {
+					if ( ! $item_id ) {
 						throw new Exception( __( 'Error: Could not create item', 'woocommerce-bookings' ) );
-				 	}
-
-				 	// Add line item meta
-				 	wc_add_order_item_meta( $item_id, '_qty', 1 );
-				 	wc_add_order_item_meta( $item_id, '_tax_class', $product->get_tax_class() );
-				 	wc_add_order_item_meta( $item_id, '_product_id', $product->id );
-				 	wc_add_order_item_meta( $item_id, '_variation_id', '' );
-				 	wc_add_order_item_meta( $item_id, '_line_subtotal', $booking_cost );
-				 	wc_add_order_item_meta( $item_id, '_line_total', $booking_cost );
-				 	wc_add_order_item_meta( $item_id, '_line_tax', 0 );
-				 	wc_add_order_item_meta( $item_id, '_line_subtotal_tax', 0 );
-
-                                        do_action( 'woocommerce_bookings_create_booking_page_add_order_item', $order_id );
-
-				 	// We have an item id
-					$new_booking_data['order_item_id'] = $item_id;
-
-					// Add line item data
-					foreach ( $booking_data as $key => $value ) {
-						if ( strpos( $key, '_' ) !== 0 ) {
-							wc_add_order_item_meta( $item_id, get_wc_booking_data_label( $key, $product ), $value );
-						}
 					}
+
+					// set order address
+					$order =  wc_get_order( $order_id );
+					$keys  = array(
+						'first_name',
+						'last_name',
+						'company',
+						'address_1',
+						'address_2',
+						'city',
+						'state',
+						'postcode',
+						'country'
+					);
+					$types = array( 'shipping', 'billing' );
+
+					foreach ( $types as $type ) {
+						$address = array();
+
+						foreach ( $keys as $key ) {
+							$address[ $key ] = (string) get_user_meta( $customer_id, $type . '_' . $key, true );
+						}
+						$order->set_address( $address, $type );
+					}
+
+					// Add line item meta
+					wc_add_order_item_meta( $item_id, '_qty', 1 );
+					wc_add_order_item_meta( $item_id, '_tax_class', $product->get_tax_class() );
+					wc_add_order_item_meta( $item_id, '_product_id', $product->get_id() );
+					wc_add_order_item_meta( $item_id, '_variation_id', '' );
+					wc_add_order_item_meta( $item_id, '_line_subtotal', $booking_cost );
+					wc_add_order_item_meta( $item_id, '_line_total', $booking_cost );
+					wc_add_order_item_meta( $item_id, '_line_tax', 0 );
+					wc_add_order_item_meta( $item_id, '_line_subtotal_tax', 0 );
+
+					do_action( 'woocommerce_bookings_create_booking_page_add_order_item', $order_id );
 				}
 
 				// Create the booking itself
-				$new_booking = get_wc_booking( $new_booking_data );
-				$new_booking ->create( $create_order ? 'unpaid' : 'confirmed' );
+				$new_booking = new WC_Booking( $props );
+				$new_booking->set_order_id( $order_id );
+				$new_booking->set_order_item_id( $item_id );
+				$new_booking->set_status( $create_order ? 'unpaid' : 'confirmed' );
+				$new_booking->save();
 
-				wp_safe_redirect( admin_url( 'post.php?post=' . ( $create_order ? $order_id : $new_booking->id ) . '&action=edit' ) );
+				wp_safe_redirect( admin_url( 'post.php?post=' . ( $create_order ? $order_id : $new_booking->get_id() ) . '&action=edit' ) );
 				exit;
 
 			}
@@ -158,44 +175,26 @@ class WC_Bookings_Create {
 	}
 
 	/**
-	 * Create order
+	 * Create order.
+	 *
 	 * @param  float $total
 	 * @param  int $customer_id
 	 * @return int
 	 */
 	public function create_order( $total, $customer_id ) {
-		if ( function_exists( 'wc_create_order' ) ) {
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
 			$order = wc_create_order( array(
-				'customer_id' => absint( $customer_id )
+				'customer_id' => absint( $customer_id ),
 			) );
 			$order_id = $order->id;
 			$order->set_total( $total );
-			update_post_meta( $order->id, '_booking_order', '1' );
+			update_post_meta( $order->id, '_created_via', 'bookings' );
 		} else {
-			$order_data = apply_filters( 'woocommerce_new_order_data', array(
-				'post_type' 	=> 'shop_order',
-				'post_title' 	=> sprintf( __( 'Order &ndash; %s', 'woocommerce-bookings' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'woocommerce-bookings' ) ) ),
-				'post_status' 	=> 'publish',
-				'ping_status'	=> 'closed',
-				'post_excerpt' 	=> '',
-				'post_author' 	=> 1,
-				'post_password'	=> uniqid( 'order_' )	// Protects the post just in case
-			) );
-
-			$order_id = wp_insert_post( $order_data, true );
-
-			update_post_meta( $order_id, '_order_shipping', 0 );
-			update_post_meta( $order_id, '_order_discount', 0 );
-			update_post_meta( $order_id, '_cart_discount', 0 );
-			update_post_meta( $order_id, '_order_tax', 0 );
-			update_post_meta( $order_id, '_order_shipping_tax', 0 );
-			update_post_meta( $order_id, '_order_total', $total );
-			update_post_meta( $order_id, '_order_key', apply_filters('woocommerce_generate_order_key', uniqid('order_') ) );
-			update_post_meta( $order_id, '_customer_user', absint( $customer_id ) );
-			update_post_meta( $order_id, '_order_currency', get_woocommerce_currency() );
-			update_post_meta( $order_id, '_prices_include_tax', get_option( 'woocommerce_prices_include_tax' ) );
-			update_post_meta( $order_id, '_booking_order', '1' );
-			wp_set_object_terms( $order_id, 'pending', 'shop_order_status' );
+			$order = new WC_Order();
+			$order->set_customer_id( $customer_id );
+			$order->set_total( $total );
+			$order->set_created_via( 'bookings' );
+			$order_id = $order->save();
 		}
 
 		do_action( 'woocommerce_new_booking_order', $order_id );
@@ -207,8 +206,9 @@ class WC_Bookings_Create {
 	 * Output any errors
 	 */
 	public function show_errors() {
-		foreach ( $this->errors as $error )
+		foreach ( $this->errors as $error ) {
 			echo '<div class="error"><p>' . esc_html( $error ) . '</p></div>';
+		}
 	}
 
 	/**

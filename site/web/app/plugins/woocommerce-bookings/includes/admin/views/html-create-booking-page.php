@@ -14,12 +14,11 @@
 						<label for="customer_id"><?php _e( 'Customer', 'woocommerce-bookings' ); ?></label>
 					</th>
 					<td>
-						<?php if ( version_compare( WOOCOMMERCE_VERSION, '2.3', '<' ) ) : ?>
-							<select id="customer_id" name="customer_id" style="width:300px">
-								<option value=""><?php _e( 'Guest', 'woocommerce-bookings' ) ?></option>
-							</select>
+						<?php if ( version_compare( WC_VERSION, '3.0', '<' ) ) : ?>
+							<input type="hidden" name="customer_id" id="customer_id" class="wc-customer-search" data-placeholder="<?php _e( 'Guest', 'woocommerce-bookings' ); ?>" data-allow_clear="true" />
 						<?php else : ?>
-							<input type="hidden" class="wc-customer-search" id="customer_id" name="customer_id" data-placeholder="<?php _e( 'Guest', 'woocommerce-bookings' ); ?>" data-allow_clear="true" style="width: 300px" />
+							<select name="customer_id" id="customer_id" class="wc-customer-search" data-placeholder="<?php _e( 'Guest', 'woocommerce-bookings' ); ?>" data-allow_clear="true">
+							</select>
 						<?php endif; ?>
 					</td>
 				</tr>
@@ -31,7 +30,7 @@
 						<select id="bookable_product_id" name="bookable_product_id" class="chosen_select" style="width: 300px">
 							<option value=""><?php _e( 'Select a bookable product...', 'woocommerce-bookings' ); ?></option>
 							<?php foreach ( WC_Bookings_Admin::get_booking_products() as $product ) : ?>
-								<option value="<?php echo $product->ID; ?>"><?php echo $product->post_title; ?></option>
+								<option value="<?php echo $product->get_id(); ?>"><?php echo sprintf( '%s (#%s)', $product->get_name(), $product->get_id() ); ?></option>
 							<?php endforeach; ?>
 						</select>
 					</td>
@@ -62,7 +61,7 @@
 						</p>
 					</td>
 				</tr>
-                                <?php do_action( 'woocommerce_bookings_after_create_booking_page' ); ?>
+				<?php do_action( 'woocommerce_bookings_after_create_booking_page' ); ?>
 				<tr valign="top">
 					<th scope="row">&nbsp;</th>
 					<td>
@@ -75,31 +74,3 @@
 	</form>
 </div>
 <?php
-
-if ( version_compare( WOOCOMMERCE_VERSION, '2.3', '<' ) ) {
-	// Ajax Chosen Customer Selectors JS
-	wc_enqueue_js( "
-		jQuery('select#customer_id').ajaxChosen({
-		    method: 		'GET',
-		    url: 			'" . admin_url('admin-ajax.php') . "',
-		    dataType: 		'json',
-		    afterTypeDelay: 100,
-		    minTermLength: 	1,
-		    data:		{
-		    	action: 	'woocommerce_json_search_customers',
-				security: 	'" . wp_create_nonce("search-customers") . "'
-		    }
-		}, function (data) {
-
-			var terms = {};
-
-		    $.each(data, function (i, val) {
-		        terms[i] = val;
-		    });
-
-		    return terms;
-		});
-
-		jQuery('select.chosen_select').chosen();
-	" );
-}

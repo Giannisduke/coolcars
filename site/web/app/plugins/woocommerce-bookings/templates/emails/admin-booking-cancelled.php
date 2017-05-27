@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <?php do_action( 'woocommerce_email_header', $email_heading ); ?>
 
-<p><?php _e( 'The following booking has been cancelled by the customer. The details of the cancelled booking can be found below.', 'woocommerce-bookings' ); ?></p>
+<p><?php _e( 'The following booking has been cancelled. The details of the cancelled booking can be found below.', 'woocommerce-bookings' ); ?></p>
 
 <table cellspacing="0" cellpadding="6" style="width: 100%; border: 1px solid #eee;" border="1" bordercolor="#eee">
 	<tbody>
@@ -39,12 +39,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</tr>
 		<?php if ( $booking->has_persons() ) : ?>
 			<?php
-				foreach ( $booking->get_persons() as $id => $qty ) :
-					if ( 0 === $qty ) {
-						continue;
-					}
+			foreach ( $booking->get_persons() as $id => $qty ) :
+				if ( 0 === $qty ) {
+					continue;
+				}
 
-					$person_type = ( 0 < $id ) ? get_the_title( $id ) : __( 'Person(s)', 'woocommerce-bookings' );
+				$person_type = ( 0 < $id ) ? get_the_title( $id ) : __( 'Person(s)', 'woocommerce-bookings' );
 			?>
 				<tr>
 					<th style="text-align:left; border: 1px solid #eee;" scope="row"><?php echo $person_type; ?></th>

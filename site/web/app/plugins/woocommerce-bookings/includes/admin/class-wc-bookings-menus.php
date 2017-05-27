@@ -1,15 +1,15 @@
 <?php
-
-if ( ! defined( 'ABSPATH' ) )
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
 
 /**
- * WC_Bookings_Menus
+ * WC_Bookings_Menus.
  */
 class WC_Bookings_Menus {
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	public function __construct() {
 		add_action( 'current_screen', array( $this, 'buffer' ) );
@@ -21,16 +21,19 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * output buffer
+	 * output buffer.
 	 */
 	public function buffer() {
 		$screen = get_current_screen();
-		if ( $screen->id == 'wc_booking_page_create_booking' )
+
+		if ( $screen->id === 'wc_booking_page_create_booking' ) {
 			ob_start();
+		}
 	}
 
 	/**
-	 * Screen IDS
+	 * Screen IDS.
+	 *
 	 * @param  array  $ids
 	 * @return array
 	 */
@@ -48,7 +51,7 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * Removes the default add new booking link from the main admin menu
+	 * Removes the default add new booking link from the main admin menu.
 	 */
 	public function remove_default_add_booking_url() {
 		global $submenu;
@@ -64,7 +67,7 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * Add a submenu for managing bookings pages
+	 * Add a submenu for managing bookings pages.
 	 */
 	public function admin_menu() {
 		$create_booking_page = add_submenu_page( 'edit.php?post_type=wc_booking', __( 'Create Booking', 'woocommerce-bookings' ), __( 'Create Booking', 'woocommerce-bookings' ), 'manage_bookings', 'create_booking', array( $this, 'create_booking_page' ) );
@@ -78,7 +81,7 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * Create booking scripts
+	 * Create booking scripts.
 	 */
 	public function create_booking_page_scripts() {
 		global $wc_bookings;
@@ -86,7 +89,7 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * Create booking page
+	 * Create booking page.
 	 */
 	public function create_booking_page() {
 		require_once( 'class-wc-bookings-create.php' );
@@ -95,14 +98,14 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * calendar_page_scripts
+	 * calendar_page_scripts.
 	 */
 	public function calendar_page_scripts() {
 		wp_enqueue_script( 'jquery-ui-datepicker' );
 	}
 
 	/**
-	 * Output the calendar page
+	 * Output the calendar page.
 	 */
 	public function calendar_page() {
 		require_once( 'class-wc-bookings-calendar.php' );
@@ -111,7 +114,7 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * Provides an email notification form
+	 * Provides an email notification form.
 	 */
 	public function notifications_page() {
 		if ( ! empty( $_POST ) && check_admin_referer( 'send_booking_notification' ) ) {
@@ -120,7 +123,6 @@ class WC_Bookings_Menus {
 			$notification_message    = wp_kses_post( stripslashes( $_POST['notification_message'] ) );
 
 			try {
-
 				if ( ! $notification_product_id )
 					throw new Exception( __( 'Please choose a product', 'woocommerce-bookings' ) );
 
@@ -144,7 +146,7 @@ class WC_Bookings_Menus {
 					}
 
 					$notification->reset_tags();
-					$notification->trigger( $booking->id, $notification_subject, $notification_message, $attachments );
+					$notification->trigger( $booking->get_id(), $notification_subject, $notification_message, $attachments );
 				}
 
 				echo '<div class="updated fade"><p>' . __( 'Notification sent successfully', 'woocommerce-bookings' ) . '</p></div>';
@@ -160,7 +162,7 @@ class WC_Bookings_Menus {
 	}
 
 	/**
-	 * Output the global availability page
+	 * Output the global availability page.
 	 */
 	public function global_availability_page() {
 		global $wpdb;
@@ -211,7 +213,6 @@ class WC_Bookings_Menus {
 		if ( 'post-new.php?post_type=wc_booking' == $path ) {
 			return admin_url( 'edit.php?post_type=wc_booking&page=create_booking' );
 		}
-
 		return $url;
 	}
 }

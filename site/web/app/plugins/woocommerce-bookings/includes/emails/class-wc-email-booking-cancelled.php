@@ -60,24 +60,34 @@ class WC_Email_Booking_Cancelled extends WC_Email {
 				return;
 			}
 
-			if ( $this->object->get_product() ) {
-				$key = array_search( '{product_title}', $this->find );
+			foreach ( array( '{product_title}', '{order_date}', '{order_number}' ) as $key ) {
+				$key = array_search( $key, $this->find );
 				if ( false !== $key ) {
 					unset( $this->find[ $key ] );
 					unset( $this->replace[ $key ] );
 				}
+			}
+
+			if ( $this->object->get_product() ) {
 				$this->find[]    = '{product_title}';
 				$this->replace[] = $this->object->get_product()->get_title();
 			}
 
 			if ( $this->object->get_order() ) {
+				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+					$billing_email = $this->object->get_order()->billing_email;
+					$order_date = $this->object->get_order()->order_date;
+				} else {
+					$billing_email = $this->object->get_order()->get_billing_email();
+					$order_date = $this->object->get_order()->get_date_created() ? $this->object->get_order()->get_date_created()->date( 'Y-m-d H:i:s' ) : '';
+				}
 				$this->find[]    = '{order_date}';
-				$this->replace[] = date_i18n( wc_date_format(), strtotime( $this->object->get_order()->order_date ) );
+				$this->replace[] = date_i18n( wc_date_format(), strtotime( $order_date ) );
 
 				$this->find[]    = '{order_number}';
 				$this->replace[] = $this->object->get_order()->get_order_number();
 
-				$this->recipient = $this->object->get_order()->billing_email;
+				$this->recipient = $billing_email;
 			} else {
 				$this->find[]    = '{order_date}';
 				$this->replace[] = date_i18n( wc_date_format(), strtotime( $this->object->booking_date ) );

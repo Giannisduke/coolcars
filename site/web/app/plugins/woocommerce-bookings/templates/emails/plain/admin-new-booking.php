@@ -14,8 +14,21 @@ if ( wc_booking_order_requires_confirmation( $booking->get_order() ) && $booking
 	$opening_paragraph = __( 'A new booking has been made by %s. The details of this booking are as follows:', 'woocommerce-bookings' );
 }
 
-if ( $booking->get_order() && $booking->get_order()->billing_first_name && $booking->get_order()->billing_last_name ) {
-	echo sprintf( $opening_paragraph, $booking->get_order()->billing_first_name . ' ' . $booking->get_order()->billing_last_name ) . "\n\n";
+
+$order = $booking->get_order();
+
+if ( $order ) {
+	if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		$first_name = $order->billing_first_name;
+		$last_name = $order->billing_last_name;
+	} else {
+		$first_name = $order->get_billing_first_name();
+		$last_name = $order->get_billing_last_name();
+	}
+}
+
+if ( ! empty( $first_name ) && ! empty( $last_name ) ) {
+	echo sprintf( $opening_paragraph, $first_name . ' ' . $last_name ) . "\n\n";
 }
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";

@@ -1,46 +1,69 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) exit;
-
+/**
+ * WC_Bookings_Save_Meta_Box.
+ */
 class WC_Bookings_Save_Meta_Box {
+
+	/**
+	 * Meta box ID.
+	 *
+	 * @var string
+	 */
 	public $id;
+
+	/**
+	 * Meta box title.
+	 *
+	 * @var string
+	 */
 	public $title;
+
+	/**
+	 * Meta box context.
+	 *
+	 * @var string
+	 */
 	public $context;
+
+	/**
+	 * Meta box priority.
+	 *
+	 * @var string
+	 */
 	public $priority;
+
+	/**
+	 * Meta box post types.
+	 * @var array
+	 */
 	public $post_types;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		$this->id         = 'woocommerce-booking-save';
-		$this->title      = __( 'Save Booking', 'woocommerce-bookings' );
+		$this->title      = __( 'Booking actions', 'woocommerce-bookings' );
 		$this->context    = 'side';
 		$this->priority   = 'high';
 		$this->post_types = array( 'wc_booking' );
-
-		add_action( 'save_post', array( $this, 'meta_box_save' ), 10, 1 );
 	}
 
+	/**
+	 * Render inner part of meta box.
+	 */
 	public function meta_box_inner( $post ) {
 		wp_nonce_field( 'wc_bookings_save_booking_meta_box', 'wc_bookings_save_booking_meta_box_nonce' );
 
 		?>
+		<div id="delete-action"><a class="submitdelete deletion" href="<?php echo esc_url( get_delete_post_link( $post->ID ) ); ?>"><?php _e( 'Move to trash', 'woocommerce-bookings' ); ?></a></div>
+
 		<input type="submit" class="button save_order button-primary tips" name="save" value="<?php _e( 'Save Booking', 'woocommerce-bookings' ); ?>" data-tip="<?php _e( 'Save/update the booking', 'woocommerce-bookings' ); ?>" />
 		<?php
 	}
-
-	public function meta_box_save( $post_id ) {
-		if ( ! isset( $_POST['wc_bookings_save_booking_meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['wc_bookings_save_booking_meta_box_nonce'], 'wc_bookings_save_booking_meta_box' ) ) {
-			return $post_id;
-		}
-
-      	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return $post_id;
-      	}
-
-		if ( ! in_array( $_POST['post_type'], $this->post_types ) ) {
-			return $post_id;
-		}
-	}
 }
-
 return new WC_Bookings_Save_Meta_Box();

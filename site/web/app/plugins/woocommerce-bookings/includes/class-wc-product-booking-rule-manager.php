@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class that parses and returns rules for bookable products
+ * Class that parses and returns rules for bookable products.
  */
 class WC_Product_Booking_Rule_Manager {
 
@@ -25,9 +25,9 @@ class WC_Product_Booking_Rule_Manager {
 			return;
 		}
 		// We have at least 1 day, even if from_date == to_date
-		$numdays = 1 + ( $to_date - $from_date ) / 60 / 60 / 24;
+		$number_of_days = 1 + ( $to_date - $from_date ) / 60 / 60 / 24;
 
-		for ( $i = 0; $i < $numdays; $i ++ ) {
+		for ( $i = 0; $i < $number_of_days; $i ++ ) {
 			$year  = date( 'Y', strtotime( "+{$i} days", $from_date ) );
 			$month = date( 'n', strtotime( "+{$i} days", $from_date ) );
 			$day   = date( 'j', strtotime( "+{$i} days", $from_date ) );
@@ -281,7 +281,6 @@ class WC_Product_Booking_Rule_Manager {
 			}
 			$rule_types[] = $fields['type'];
 		}
-		$rule_types = array_filter( $rule_types );
 
 		// Go through rules
 		foreach ( $rules as $order_on_product => $fields ) {
@@ -306,13 +305,18 @@ class WC_Product_Booking_Rule_Manager {
 			}
 
 			if ( $type_availability ) {
-				$processed_rules[] = array(
+				$processed_rule = array(
 					'type'     => $fields['type'],
 					'range'    => $type_availability,
 					'priority' => $priority,
 					'level'    => $level,
 					'order'    => $order_on_product,
 				);
+
+				if ( 'resource' === $level ) {
+					$processed_rule['resource_id'] = $fields['resource_id'];
+				}
+				$processed_rules[] = $processed_rule;
 			}
 		}
 
@@ -333,11 +337,14 @@ class WC_Product_Booking_Rule_Manager {
 	 */
 	public static function get_minutes_from_rules( $rules, $check_date ) {
 		$bookable_minutes = array();
+		$resource_minutes = array();
+
 		foreach ( $rules as $rule ) {
 			$data_for_rule = array(
 				'is_bookable' => false,
 				'minutes'     => array(),
 			);
+
 			if ( strpos( $rule['type'], 'time' ) > -1 ) {
 				$data_for_rule = self::get_rule_minutes_for_time( $rule, $check_date );
 			} elseif ( 'days' === $rule['type'] ) {
@@ -350,16 +357,45 @@ class WC_Product_Booking_Rule_Manager {
 				$data_for_rule = self::get_rule_minutes_for_custom( $rule, $check_date );
 			}
 
-			if ( $data_for_rule['is_bookable'] ) {
-				// If this time range is bookable, add to bookable minutes
-				$bookable_minutes = array_merge( $bookable_minutes, $data_for_rule['minutes'] );
+			// split up the rules on a resource level to be dealt with independently
+			// after the rules loop. This ensure resource do not affect one another
+			if ( isset( $rule['level'] ) && 'resource' === $rule['level'] ) {
+				$resource_id                        = $rule['resource_id'];
+				$availability_key                        = $data_for_rule['is_bookable'] ? 'bookable' : 'not_bookable';
+				// adding minutes in the order of the rules received, higher index higher override power.
+				$resource_minutes[ $resource_id ][] = array( $availability_key => $data_for_rule['minutes'] );
 			} else {
-				// If this time range is not bookable, remove from bookable minutes
-				$bookable_minutes = array_diff( $bookable_minutes, $data_for_rule['minutes'] );
+				if ( $data_for_rule['is_bookable'] ) {
+					// If this time range is bookable, add to bookable minutes
+					$bookable_minutes = array_merge( $bookable_minutes, $data_for_rule['minutes'] );
+				} else {
+					// If this time range is not bookable, remove from bookable minutes
+					$bookable_minutes = array_diff( $bookable_minutes, $data_for_rule['minutes'] );
+				}
 			}
 		}
 
-		array_unique( $bookable_minutes );
+//		 one resource should not override the other, when automatically assigned: as long as one is available.
+		foreach ( $resource_minutes as $resource_id => $minutes_for_rule_order ) {
+			$resource_minutes     = array();
+
+			foreach ( $minutes_for_rule_order as $rule_minutes_with_availability ) {
+				$is_bookable = isset( $rule_minutes_with_availability['bookable'] );
+				if ( $is_bookable ) {
+					$resource_minutes = array_merge( $resource_minutes, $rule_minutes_with_availability['bookable'] );
+				} else {
+					$resource_minutes = array_diff( $resource_minutes, $rule_minutes_with_availability['not_bookable'] );
+				}
+			}
+			// @todo this may be a problem as resource minutes may now affect product and global availability at this point.
+			$bookable_minutes = array_merge( $resource_minutes, $bookable_minutes );
+		}
+
+
+
+
+		$bookable_minutes = array_unique( array_values( $bookable_minutes ) );
+
 		sort( $bookable_minutes );
 		return $bookable_minutes;
 	}
@@ -369,7 +405,7 @@ class WC_Product_Booking_Rule_Manager {
 	 *
 	 * @since 1.9.14
 	 * @param $rule
-	 * @param $check_date
+	 * @param integer $check_date
 	 *
 	 * @return array
 	 */
@@ -381,7 +417,7 @@ class WC_Product_Booking_Rule_Manager {
 
 		$year        = date( 'Y', $check_date );
 		$month       = date( 'n', $check_date );
-		$day         = date( 'd', $check_date );
+		$day         = date( 'j', $check_date );
 		$day_of_week = date( 'N', $check_date );
 
 		$day_modifier = 0;
@@ -453,7 +489,7 @@ class WC_Product_Booking_Rule_Manager {
 	 *
 	 * @since 1.9.14
 	 * @param $rule
-	 * @param $check_date
+	 * @param integer $check_date
 	 *
 	 * @return array
 	 */
@@ -476,14 +512,14 @@ class WC_Product_Booking_Rule_Manager {
 	 *
 	 * @since 1.9.14
 	 * @param $rule
-	 * @param $check_date
+	 * @param integer $check_date
 	 *
 	 * @return array
 	 */
 	public static function get_rule_minutes_for_weeks( $rule, $check_date ) {
 
 		$range       = $rule['range'];
-		$week_number = date( 'W', $check_date );
+		$week_number = intval( date( 'W', $check_date ) );
 		$minutes     = array();
 		$is_bookable = false;
 
@@ -500,7 +536,7 @@ class WC_Product_Booking_Rule_Manager {
 	 *
 	 * @since 1.9.14
 	 * @param $rule
-	 * @param $check_date
+	 * @param integer $check_date
 	 *
 	 * @return array
 	 */
@@ -522,7 +558,7 @@ class WC_Product_Booking_Rule_Manager {
 	 * Get minutes from rules for custom rule type.
 	 * @since 1.9.14
 	 * @param $rule
-	 * @param $check_date
+	 * @param integer $check_date
 	 *
 	 * @return array
 	 */
@@ -531,10 +567,11 @@ class WC_Product_Booking_Rule_Manager {
 		$range = $rule['range'];
 		$year  = date( 'Y', $check_date );
 		$month = date( 'n', $check_date );
-		$day   = date( 'd', $check_date );
+		$day   = date( 'j', $check_date );
 
 		$minutes     = array();
 		$is_bookable = false;
+
 		if ( isset( $range[ $year ][ $month ][ $day ] ) ) {
 			$minutes     = range( 0, 1440 );
 			$is_bookable = $range[ $year ][ $month ][ $day ];
@@ -542,4 +579,367 @@ class WC_Product_Booking_Rule_Manager {
 
 		return array( 'is_bookable' => $is_bookable, 'minutes' => $minutes );
 	}
+
+	/**
+	 * Sort rules in order of precedence.
+	 *
+	 * @version 1.9.14 sort order reversed
+	 * The order produced will be from the lowest to the highest.
+	 * The elements with higher indexes overrides those with lower indexes e.g. `4` overrides `3`
+	 * Index corresponds to override power. The higher the element index the higher the override power
+	 *
+	 * Level    : `global` > `product` > `product` (greater in terms off override power)
+	 * Priority : within a level
+	 * Order    : Within a priority The lower the order index higher the override power.
+	 *
+	 * @param array $rule1
+	 * @param array $rule2
+	 *
+	 * @return integer
+	 */
+	public static function sort_rules_callback( $rule1, $rule2 ) {
+		$level_weight = array(
+			'resource' => 1,
+			'product'  => 3,
+			'global'   => 5,
+		);
+
+		// The override power goes from the outside inward.
+		// Priority is outside which means it has the most weight when sorting.
+		// Then level(global, product, resource)
+		// Lastly order is applied within the level.
+		if ( $rule1['priority'] === $rule2['priority'] ) {
+			if ( $level_weight[ $rule1['level'] ] === $level_weight[ $rule2['level'] ] ) {
+				// if `order index of 1` < `order index of 2` $rule1 one has a higher override power. So we
+				// increase the index for $rule1 which corresponds to override power.
+				return ( $rule1['order'] < $rule2['order'] ) ? 1 : -1;
+			}
+
+			// if `level of 1` < `level of 2` $rule1 must have lower override power. So we
+			// decrease the index for 1 which corresponds to override power.
+			return $level_weight[ $rule1['level'] ] < $level_weight[ $rule2['level'] ] ? -1 : 1;
+		}
+
+		// if `priority of 1` < `priority of 2` $rule1 must have lower override power. So we
+		// decrease the index for 1 which corresponds to override power.
+		return $rule1['priority'] < $rule2['priority'] ? 1 : -1;
+	}
+
+	/**
+	 * Filter out all but time rules.
+	 * @param  array $rule
+	 * @return boolean
+	 */
+	private static function filter_time_rules( $rule ) {
+		return ! empty( $rule['type'] ) && ! in_array( $rule['type'], array( 'days', 'custom', 'months', 'weeks' ) );
+	}
+
+	/**
+	 * Check a bookable product's availability rules against a time range and return if bookable or not.
+	 *
+	 * @param  WC_Product_Booking $bookable_product
+	 * @param  int $resource_id
+	 * @param  int $start timestamp
+	 * @param  int $end timestamp
+	 * @return boolean
+	 */
+	public static function check_range_availability_rules( $bookable_product, $resource_id, $start, $end ) {
+		// This is a time range.
+		if ( in_array( $bookable_product->get_duration_unit(), array( 'minute', 'hour' ) ) ) {
+			return self::check_availability_rules_against_time( $start, $end, $resource_id, $bookable_product );
+		} // Else this is a date range (days).
+		else {
+			$timestamp = $start;
+
+			while ( $timestamp < $end ) {
+				if ( ! self::check_availability_rules_against_date( $bookable_product, $resource_id, $timestamp ) ) {
+					return false;
+				}
+				if ( $bookable_product->get_check_start_block_only() ) {
+					break; // Only need to check first day
+				}
+				$timestamp = strtotime( '+1 day', $timestamp );
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check a time against the time specific availability rules
+	 *
+	 * @param integer $slot_start_time
+	 * @param integer $slot_end_time
+	 * @param integer $resource_id
+	 * @param WC_Product_Booking $bookable_product
+	 *
+	 * @return bool available or not
+	 */
+	public static function check_availability_rules_against_time( $slot_start_time, $slot_end_time, $resource_id, $bookable_product ) {
+		$bookable        = $bookable_product->get_default_availability();
+		$slot_start_time = is_numeric( $slot_start_time ) ? $slot_start_time : strtotime( $slot_start_time );
+		$slot_end_time   = is_numeric( $slot_end_time ) ? $slot_end_time : strtotime( $slot_end_time );
+
+		$rules           = $bookable_product->get_availability_rules( $resource_id );
+
+		// Get the date values for the slots being checked
+		$slot_year   = intval( date( 'Y', $slot_start_time ) );
+		$slot_month  = intval( date( 'n', $slot_start_time ) );
+		$slot_date   = intval( date( 'j', $slot_start_time ) );
+		$slot_day_no = intval( date( 'N', $slot_start_time ) );
+		$slot_week   = intval( date( 'W', $slot_start_time ) );
+
+		// default from and to for the whole day
+		$from = strtotime( 'midnight', $slot_start_time );
+		$to   = strtotime( 'midnight + 1 day', $slot_start_time );
+
+		foreach ( $rules as $rule ) {
+			$type  = $rule['type'];
+			$range = $rule['range'];
+
+			// handling none time specific rules first
+			if ( in_array( $type, array( 'days', 'custom', 'months', 'weeks' ) ) ) {
+				if ( 'days' === $type ) {
+					if ( ! isset( $range[ $slot_day_no ] ) ) {
+						continue;
+					}
+				} elseif ( 'custom' === $type ) {
+					if ( ! isset( $range[ $slot_year ][ $slot_month ][ $slot_date ] ) ) {
+						continue;
+					}
+				} elseif ( 'months' === $type ) {
+					if ( ! isset( $range[ $slot_month ] ) ) {
+						continue;
+					}
+				} elseif ( 'weeks' === $type ) {
+					if ( ! isset( $range[ $slot_week ] ) ) {
+						continue;
+					}
+				}
+				$rule_val = self::check_timestamp_against_rule( $slot_start_time, $rule, $bookable_product->get_default_availability() );
+			}
+
+			// Handling all time specific rules
+			if ( 'time:range' === $type ) {
+				if ( ! isset( $range[ $slot_year ][ $slot_month ][ $slot_date ] ) ) {
+					continue;
+				}
+				$time_range_rule = $range[ $slot_year ][ $slot_month ][ $slot_date ];
+				$rule_val = $time_range_rule['rule'];
+				$from     = $time_range_rule['from'];
+				$to       = $time_range_rule['to'];
+			} elseif ( false !== strpos( $type, 'time' ) ) {
+				// if the day doesn't match and the day is not zero skip the rule
+				// zero means all days. SO rule only apply for zero or a matching day.
+				if ( ! empty( $range['day'] ) && $slot_day_no != $range['day'] ) {
+					continue;
+				}
+
+
+				// check that the rule should be applied to the current slot
+				// if not time it must be time:day_number
+				if ( 'time' !== $type ) {
+					if ( ! strpos( $type, (string) $slot_day_no ) ) {
+						continue;
+					}
+				}
+
+				$rule_val = $range['rule'];
+				$from     = $range['from'];
+				$to       = $range['to'];
+			}
+
+			$rule_start_time = strtotime( $from, $slot_start_time );
+			$rule_end_time   = strtotime( $to, $slot_start_time );
+
+			// Reverse time rule - The end time is tomorrow e.g. 16:00 today - 12:00 tomorrow
+			if ( $rule_end_time <= $rule_start_time ) {
+				if ( $slot_end_time > $rule_start_time ) {
+					$bookable = $rule_val;
+					continue;
+				}
+				if ( $slot_start_time >= $rule_start_time && $slot_end_time >= $rule_end_time ) {
+					$bookable = $rule_val;
+					continue;
+				}
+				// does this rule apply?
+				// does slot start before rule start and end after rules start time {goes over start time}
+				if ( $slot_start_time < $rule_start_time && $slot_end_time > $rule_start_time ) {
+					$bookable = $rule_val;
+					continue;
+				}
+			} else {
+				// Normal rule.
+				if ( $slot_start_time >= $rule_start_time && $slot_end_time <= $rule_end_time ) {
+					$bookable = $rule_val;
+					continue;
+				}
+
+				// specific to hour duration types. If start time is in between
+				// rule start and end times the rule should be applied.
+				if ( 'hour' == $bookable_product->get_duration_unit()
+				     && $slot_start_time > $rule_start_time
+				     && $slot_start_time < $rule_end_time ) {
+
+					$bookable = $rule_val;
+					continue;
+
+				}
+			}
+		}
+
+		return $bookable;
+	}
+
+	/**
+	 * Check a date against the availability rules
+	 *
+	 * @version 1.10.0 Moved to this class from WC_Product_Booking
+	 *                 only apply rules if within their scope
+	 *                 keep booking value alive within the loop to ensure the next rule with higher power can override
+	 * @version 1.9.14 removed all calls to break 2 to ensure we get to the highest
+	 *                 priority rules, otherwise higher order/priority rules will not
+	 *                 override lower ones and the function exit with the wrong value.
+	 *
+	 *
+	 * @param  WC_Product_Booking $bookable_product
+	 * @param  int $resource_id
+	 * @param  int $check_date timestamp
+	 * @return bool available or not
+	 */
+	public static function check_availability_rules_against_date( $bookable_product, $resource_id, $check_date ) {
+		$bookable = $bookable_product->get_default_availability();
+		foreach ( $bookable_product->get_availability_rules( $resource_id ) as $rule ) {
+			if ( self::does_rule_apply( $rule, $check_date ) ) {
+				// passing $bookable into the next check as it overrides the previous value
+				$bookable = self::check_timestamp_against_rule( $check_date, $rule, $bookable );
+			}
+		}
+		return $bookable;
+	}
+
+	/**
+	 * Does the time stamp fall within the scope of the rule?
+	 *
+	 * @param $rule
+	 * @param $timestamp
+	 * @return bool
+	 */
+	public static function does_rule_apply( $rule, $timestamp ) {
+		$year        = intval( date( 'Y', $timestamp ) );
+		$month       = intval( date( 'n', $timestamp ) );
+		$day         = intval( date( 'j', $timestamp ) );
+		$day_of_week = intval( date( 'N', $timestamp ) );
+		$week        = intval( date( 'W', $timestamp ) );
+
+		$range = $rule['range'];
+
+		switch ( $rule['type'] ) {
+			case 'months' :
+				if ( isset( $range[ $month ] ) ) {
+					return true;
+				}
+				break;
+			case 'weeks':
+				if ( isset( $range[ $week ] ) ) {
+					return true;
+				}
+				break;
+			case 'days' :
+				if ( isset( $range[ $day_of_week ] ) ) {
+					return true;
+				}
+				break;
+			case 'custom' :
+				if ( isset( $range[ $year ][ $month ][ $day ] ) ) {
+					return true;
+				}
+				break;
+			case 'time':
+			case 'time:1':
+			case 'time:2':
+			case 'time:3':
+			case 'time:4':
+			case 'time:5':
+			case 'time:6':
+			case 'time:7':
+				if ( $day_of_week === $range['day'] || 0 === $range['day'] ) {
+					return true;
+				}
+				break;
+			case 'time:range':
+				if ( isset( $range[ $year ][ $month ][ $day ] ) ) {
+					return true;
+				}
+				break;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Given a timestamp and rule check to see if the time stamp is bookable based on the rule.
+	 *
+	 * @since 1.10.0
+	 *
+	 * @param integer $timestamp
+	 * @param array $rule
+	 * @param boolean $default
+	 * @return boolean
+	 */
+	public static function check_timestamp_against_rule( $timestamp, $rule, $default ) {
+		$year        = intval( date( 'Y', $timestamp ) );
+		$month       = intval( date( 'n', $timestamp ) );
+		$day         = intval( date( 'j', $timestamp ) );
+		$day_of_week = intval( date( 'N', $timestamp ) );
+		$week        = intval( date( 'W', $timestamp ) );
+
+		$type  = $rule['type'];
+		$range = $rule['range'];
+		$bookable = $default;
+
+		switch ( $type ) {
+			case 'months' :
+				if ( isset( $range[ $month ] ) ) {
+					$bookable = $range[ $month ];
+				}
+				break;
+			case 'weeks':
+				if ( isset( $range[ $week ] ) ) {
+					$bookable = $range[ $week ];
+				}
+				break;
+			case 'days' :
+				if ( isset( $range[ $day_of_week ] ) ) {
+					$bookable = $range[ $day_of_week ];
+				}
+				break;
+			case 'custom' :
+				if ( isset( $range[ $year ][ $month ][ $day ] ) ) {
+					$bookable = $range[ $year ][ $month ][ $day ];
+				}
+				break;
+			case 'time':
+			case 'time:1':
+			case 'time:2':
+			case 'time:3':
+			case 'time:4':
+			case 'time:5':
+			case 'time:6':
+			case 'time:7':
+				if ( false === $default && ( $day_of_week === $range['day'] || 0 === $range['day'] ) ) {
+					$bookable = $range['rule'];
+				}
+				break;
+			case 'time:range':
+				if ( false === $default && ( isset( $range[ $year ][ $month ][ $day ] ) ) ) {
+					$bookable = $range[ $year ][ $month ][ $day ]['rule'];
+				}
+				break;
+		}
+
+		return $bookable;
+	}
+
+
 }
