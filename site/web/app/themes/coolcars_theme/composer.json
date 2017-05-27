@@ -26,5 +26,9 @@
   "require": {
     "php": ">=5.4.0",
     "composer/installers": "~1.0"
-  }
+  },
+  "repositories": [{
+      "type": "composer",
+      "url": "http://wpackagist.org/"
+    }]
 }
