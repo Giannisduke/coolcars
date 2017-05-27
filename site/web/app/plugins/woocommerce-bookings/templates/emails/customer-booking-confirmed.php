@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php do_action( 'woocommerce_email_header', $email_heading ); ?>
 
 <?php if ( $booking->get_order() ) : ?>
-	<p><?php printf( __( 'Hello %s', 'woocommerce-bookings' ), ( is_callable( array( $booking->get_order(), 'get_billing_first_name' ) ) ? $booking->get_order()->get_billing_first_name() : $booking->get_order()->billing_first_name ) ); ?></p>
+	<p><?php printf( __( 'Hello %s', 'woocommerce-bookings' ), $booking->get_order()->billing_first_name ); ?></p>
 <?php endif; ?>
 
 <p><?php _e( 'Your booking has been confirmed. The details of your booking are shown below.', 'woocommerce-bookings' ); ?></p>
@@ -59,22 +59,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <?php if ( $order = $booking->get_order() ) : ?>
 
-	<?php if ( 'pending' === $order->get_status() ) : ?>
+	<?php if ( $order->status == 'pending' ) : ?>
 		<p><?php printf( __( 'To pay for this booking please use the following link: %s', 'woocommerce-bookings' ), '<a href="' . esc_url( $order->get_checkout_payment_url() ) . '">' . __( 'Pay for booking', 'woocommerce-bookings' ) . '</a>' ); ?></p>
 	<?php endif; ?>
 
 	<?php do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text ); ?>
 
-	<h2><?php
-
-$pre_wc_30 = version_compare( WC_VERSION, '3.0', '<' );
-if ( $pre_wc_30 ) {
-	$order_date = $order->order_date;
-} else {
-	$order_date = $order->get_date_created() ? $order->get_date_created()->date( 'Y-m-d H:i:s' ) : '';
-}
-
-echo __( 'Order', 'woocommerce-bookings' ) . ': ' . $order->get_order_number(); ?> (<?php printf( '<time datetime="%s">%s</time>', date_i18n( 'c', strtotime( $order_date ) ), date_i18n( wc_date_format(), strtotime( $order_date ) ) ); ?>)</h2>
+	<h2><?php echo __( 'Order', 'woocommerce-bookings' ) . ': ' . $order->get_order_number(); ?> (<?php printf( '<time datetime="%s">%s</time>', date_i18n( 'c', strtotime( $order->order_date ) ), date_i18n( wc_date_format(), strtotime( $order->order_date ) ) ); ?>)</h2>
 
 	<table cellspacing="0" cellpadding="6" style="width: 100%; border: 1px solid #eee;" border="1" bordercolor="#eee">
 		<thead>
@@ -86,15 +77,18 @@ echo __( 'Order', 'woocommerce-bookings' ) . ': ' . $order->get_order_number(); 
 		</thead>
 		<tbody>
 			<?php
-				switch ( $order->get_status() ) {
+				switch ( $order->status ) {
 
 					case "completed" :
-						echo $pre_wc_30 ? $order->email_order_items_table( array( 'show_sku' => false ) ) : wc_get_email_order_items( $order, array( 'show_sku' => false ) );
+						echo $order->email_order_items_table( array( 'show_sku' => false ) );
 						break;
 
 					case "processing" :
+						echo $order->email_order_items_table( array( 'show_sku' => true ) );
+						break;
+
 					default :
-						echo $pre_wc_30 ? $order->email_order_items_table( array( 'show_sku' => true ) ) : wc_get_email_order_items( $order, array( 'show_sku' => true ) );
+						echo $order->email_order_items_table( array( 'show_sku' => true ) );
 						break;
 				}
 			?>

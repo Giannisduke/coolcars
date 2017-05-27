@@ -34,7 +34,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 		$this->init_settings();
 
 		// Actions.
-		add_action( 'woocommerce_update_options_integration_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
 		add_action( 'woocommerce_api_wc_bookings_google_calendar' , array( $this, 'oauth_redirect' ) );
 		add_action( 'woocommerce_booking_confirmed', array( $this, 'sync_new_booking' ) );
 		add_action( 'woocommerce_booking_paid', array( $this, 'sync_new_booking' ) );
@@ -49,7 +49,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 		}
 
 		// Active logs.
-		if ( 'yes' === $this->debug ) {
+		if ( 'yes' == $this->debug ) {
 			if ( class_exists( 'WC_Logger' ) ) {
 				$this->log = new WC_Logger();
 			} else {
@@ -70,38 +70,38 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'type'        => 'text',
 				'description' => __( 'Enter with your Google Client ID.', 'woocommerce-bookings' ),
 				'desc_tip'    => true,
-				'default'     => '',
+				'default'     => ''
 			),
 			'client_secret' => array(
 				'title'       => __( 'Client Secret', 'woocommerce-bookings' ),
 				'type'        => 'text',
 				'description' => __( 'Enter with your Google Client Secret.', 'woocommerce-bookings' ),
 				'desc_tip'    => true,
-				'default'     => '',
+				'default'     => ''
 			),
 			'calendar_id' => array(
 				'title'       => __( 'Calendar ID', 'woocommerce-bookings' ),
 				'type'        => 'text',
 				'description' => __( 'Enter with your Calendar ID.', 'woocommerce-bookings' ),
 				'desc_tip'    => true,
-				'default'     => '',
+				'default'     => ''
 			),
 			'authorization' => array(
 				'title'       => __( 'Authorization', 'woocommerce-bookings' ),
-				'type'        => 'google_calendar_authorization',
+				'type'        => 'google_calendar_authorization'
 			),
 			'testing' => array(
 				'title'       => __( 'Testing', 'woocommerce-bookings' ),
 				'type'        => 'title',
-				'description' => '',
+				'description' => ''
 			),
 			'debug' => array(
 				'title'       => __( 'Debug Log', 'woocommerce-bookings' ),
 				'type'        => 'checkbox',
 				'label'       => __( 'Enable logging', 'woocommerce-bookings' ),
 				'default'     => 'no',
-				'description' => sprintf( __( 'Log Google Calendar events, such as API requests, inside %s', 'woocommerce-bookings' ), '<code>woocommerce/logs/' . $this->id . '-' . sanitize_file_name( wp_hash( $this->id ) ) . '.txt</code>' ),
-			),
+				'description' => sprintf( __( 'Log Google Calendar events, such as API requests, inside %s', 'woocommerce-bookings' ), '<code>woocommerce/logs/' . $this->id . '-' . sanitize_file_name( wp_hash( $this->id ) ) . '.txt</code>' )
+			)
 		);
 	}
 
@@ -175,7 +175,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 		echo '<h3>' . $this->method_title . '</h3>';
 		echo wpautop( $this->method_description );
 
-		echo '<p>' . sprintf( __( 'To use this integration you need create a project in %1$s. Once your project has been created, you must enable the <strong>Google Calendar API</strong> in <strong>Your Project > Library</strong>, finally in <strong>Your Project > Credentials > Create Credentials</strong> you must create an OAuth Client ID for a <strong>Web application</strong> and set the <strong>Authorized redirect URIs</strong> as <code>%2$s</code>.', 'woocommerce-bookings' ), '<a href="https://console.developers.google.com/project" target="_blank">' . __( 'Google Developers Console', 'woocommerce-bookings' ) . '</a>', $this->redirect_uri ) . '</p>';
+		echo '<p>' . sprintf( __( 'To use this integration you need create a project in %s. Once your project has been created, you must enable the <strong>Google Calendar API</strong> in <strong>Your Project > Library</strong>, finally in <strong>Your Project > Credentials > Create Credentials</strong> you must create an OAuth Client ID for a <strong>Web application</strong> and set the <strong>Authorized redirect URIs</strong> as <code>%s</code>.', 'woocommerce-bookings' ), '<a href="https://console.developers.google.com/project" target="_blank">' . __( 'Google Developers Console', 'woocommerce-bookings' ) . '</a>', $this->redirect_uri ) . '</p>';
 
 		echo '<table class="form-table">';
 			$this->generate_settings_html();
@@ -193,14 +193,14 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 	 */
 	protected function get_access_token( $code = '' ) {
 
-		if ( 'yes' === $this->debug ) {
+		if ( 'yes' == $this->debug ) {
 			$this->log->add( $this->id, 'Getting Google API Access Token...' );
 		}
 
 		$access_token = get_transient( 'wc_bookings_gcalendar_access_token' );
 
 		if ( ! $code && false !== $access_token ) {
-			if ( 'yes' === $this->debug ) {
+			if ( 'yes' == $this->debug ) {
 				$this->log->add( $this->id, 'Access Token recovered by transients: ' . print_r( $access_token, true ) );
 			}
 
@@ -211,7 +211,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 
 		if ( ! $code && $refresh_token ) {
 
-			if ( 'yes' === $this->debug ) {
+			if ( 'yes' == $this->debug ) {
 				$this->log->add( $this->id, 'Generating a new Access Token...' );
 			}
 
@@ -219,7 +219,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'client_id'     => $this->client_id,
 				'client_secret' => $this->client_secret,
 				'refresh_token' => $refresh_token,
-				'grant_type'    => 'refresh_token',
+				'grant_type'    => 'refresh_token'
 			);
 
 			$params = array(
@@ -227,8 +227,8 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'sslverify' => false,
 				'timeout'   => 60,
 				'headers'   => array(
-					'Content-Type' => 'application/x-www-form-urlencoded',
-				),
+					'Content-Type' => 'application/x-www-form-urlencoded'
+				)
 			);
 
 			$response = wp_remote_post( $this->oauth_uri . 'token', $params );
@@ -237,7 +237,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				$response_data = json_decode( $response['body'] );
 				$access_token  = sanitize_text_field( $response_data->access_token );
 
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Google API Access Token generated successfully: ' . print_r( $access_token, true ) );
 				}
 
@@ -246,13 +246,13 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 
 				return $access_token;
 			} else {
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Error while generating the Access Token: ' . print_r( $response, true ) );
 				}
 			}
-		} elseif ( '' != $code ) {
+		} else if ( '' != $code ) {
 
-			if ( 'yes' === $this->debug ) {
+			if ( 'yes' == $this->debug ) {
 				$this->log->add( $this->id, 'Renewing the Access Token...' );
 			}
 
@@ -261,7 +261,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'client_id'     => $this->client_id,
 				'client_secret' => $this->client_secret,
 				'redirect_uri'  => $this->redirect_uri,
-				'grant_type'    => 'authorization_code',
+				'grant_type'    => 'authorization_code'
 			);
 
 			$params = array(
@@ -269,8 +269,8 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'sslverify' => false,
 				'timeout'   => 60,
 				'headers'   => array(
-					'Content-Type' => 'application/x-www-form-urlencoded',
-				),
+					'Content-Type' => 'application/x-www-form-urlencoded'
+				)
 			);
 
 			$response = wp_remote_post( $this->oauth_uri . 'token', $params );
@@ -285,19 +285,19 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				// Set the transient.
 				set_transient( 'wc_bookings_gcalendar_access_token', $access_token, 3500 );
 
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Google API Access Token renewed successfully: ' . print_r( $access_token, true ) );
 				}
 
 				return $access_token;
 			} else {
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Error while renewing the Access Token: ' . print_r( $response, true ) );
 				}
 			}
 		}
 
-		if ( 'yes' === $this->debug ) {
+		if ( 'yes' == $this->debug ) {
 			$this->log->add( $this->id, 'Failed to retrieve and generate the Access Token' );
 		}
 
@@ -310,7 +310,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 	 * @return bool
 	 */
 	protected function oauth_logout() {
-		if ( 'yes' === $this->debug ) {
+		if ( 'yes' == $this->debug ) {
 			$this->log->add( $this->id, 'Leaving the Google Calendar app...' );
 		}
 
@@ -321,8 +321,8 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'sslverify' => false,
 				'timeout'   => 60,
 				'headers'   => array(
-					'Content-Type' => 'application/x-www-form-urlencoded',
-				),
+					'Content-Type' => 'application/x-www-form-urlencoded'
+				)
 			);
 
 			$response = wp_remote_get( $this->oauth_uri . 'revoke?token=' . $refresh_token, $params );
@@ -331,19 +331,19 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				delete_option( 'wc_bookings_gcalendar_refresh_token' );
 				delete_transient( 'wc_bookings_gcalendar_access_token' );
 
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Leave the Google Calendar app successfully' );
 				}
 
 				return true;
 			} else {
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Error when leaving the Google Calendar app: ' . print_r( $response, true ) );
 				}
 			}
 		}
 
-		if ( 'yes' === $this->debug ) {
+		if ( 'yes' == $this->debug ) {
 			$this->log->add( $this->id, 'Failed to leave the Google Calendar app' );
 		}
 
@@ -363,7 +363,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 		$redirect_args = array(
 			'page'    => 'wc-settings',
 			'tab'     => 'integration',
-			'section' => $this->id,
+			'section' => $this->id
 		);
 
 		// OAuth.
@@ -431,104 +431,106 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function sync_new_booking( $booking_id ) {
-		if ( $this->is_edited_from_meta_box() || 'wc_booking' !== get_post_type( $booking_id ) ) {
+		if ( $this->is_edited_from_meta_box() ) {
 			return;
 		}
+
 		$this->sync_booking( $booking_id );
 	}
 
 	/**
-	 * Sync Booking with Google Calendar.
+	 * Sync Booking with Google Calendar
 	 *
 	 * @param  int $booking_id Booking ID
+	 *
+	 * @return void
 	 */
 	public function sync_booking( $booking_id ) {
-		if ( 'wc_booking' !== get_post_type( $booking_id ) ) {
-			return;
-		}
-
-		// Prepare for API request.
+		$event_id     = get_post_meta( $booking_id, '_wc_bookings_gcalendar_event_id', true );
+		$booking      = get_wc_booking( $booking_id );
+		$order        = $booking->get_order();
 		$api_url      = $this->calendars_uri . $this->calendar_id . '/events';
 		$access_token = $this->get_access_token();
 		$timezone     = wc_booking_get_timezone_string();
+		$summary      = '#' . $booking->id;
+		$description  = '';
 
-		// Booking data.
-		$booking       = get_wc_booking( $booking_id );
-		$event_id      = $booking->get_google_calendar_event_id();
-		$order         = $booking->get_order();
-		$product_id    = $booking->get_product_id();
-		$product       = wc_get_product( $product_id );
-		$order_item_id = $booking->get_order_item_id();
-		$description   = '';
-
-		if ( $order && $order_item_id ) {
-			if ( class_exists( 'WC_Order_Item_Product' ) ) {
-				$item         = new WC_Order_Item_Product( $order_item_id );
-				$description .= strip_tags( wc_display_item_meta( $item, array(
-					'before'    => "",
-					'separator' => ", " . PHP_EOL,
-					'after'     => "",
-					'echo'      => false,
-					'autop'     => false,
-				) ) );
-			} else {
-				$metadata = $order->has_meta( $order_item_id );
-
-				foreach ( $metadata as $meta ) {
-					// Skip hidden core fields
-					if ( in_array( $meta['meta_key'], apply_filters( 'woocommerce_hidden_order_itemmeta', array(
-						'_qty',
-						'_tax_class',
-						'_product_id',
-						'_variation_id',
-						'_line_subtotal',
-						'_line_subtotal_tax',
-						'_line_total',
-						'_line_tax',
-					) ) ) ) {
+		// Need a order.
+		if ( $order ) {
+			$order_items  = $order->get_items();
+			// Need order items.
+			if ( $order_items ) {
+				foreach ( $order->get_items() as $item_id => $item ) {
+					if ( 'line_item' != $item['type'] ) {
 						continue;
 					}
 
-					// Booking fields.
-					if ( in_array( $meta['meta_key'], array( __( 'Booking Date', 'woocommerce-bookings' ), __( 'Booking Time', 'woocommerce-bookings' ) ) ) ) {
-						continue;
+					$summary .= ' - ' . $item['name'];
+
+					if ( $metadata = $order->has_meta( $item_id ) ) {
+						foreach ( $metadata as $meta ) {
+
+							// Skip hidden core fields
+							if ( in_array( $meta['meta_key'], apply_filters( 'woocommerce_hidden_order_itemmeta', array(
+								'_qty',
+								'_tax_class',
+								'_product_id',
+								'_variation_id',
+								'_line_subtotal',
+								'_line_subtotal_tax',
+								'_line_total',
+								'_line_tax',
+							) ) ) ) {
+								continue;
+							}
+
+							// Booking fields.
+							if ( in_array( $meta['meta_key'], array( __( 'Booking Date', 'woocommerce-bookings' ), __( 'Booking Time', 'woocommerce-bookings' ) ) ) ) {
+								continue;
+							}
+
+							$meta_value = $meta['meta_value'];
+
+							// Skip serialised meta
+							if ( is_serialized( $meta_value ) ) {
+								continue;
+							}
+
+							// Get attribute data
+							if ( taxonomy_exists( $meta['meta_key'] ) ) {
+								global $wpdb;
+								$term           = get_term_by( 'slug', $meta['meta_value'], $meta['meta_key'] );
+								$attribute_name = str_replace( 'pa_', '', wc_clean( $meta['meta_key'] ) );
+								$attribute      = $wpdb->get_var(
+									$wpdb->prepare( "
+											SELECT attribute_label
+											FROM {$wpdb->prefix}woocommerce_attribute_taxonomies
+											WHERE attribute_name = %s;
+										",
+										$attribute_name
+									)
+								);
+
+								$meta['meta_key']   = ( ! is_wp_error( $attribute ) && $attribute ) ? $attribute : $attribute_name;
+								$meta['meta_value'] = ( isset( $term->name ) ) ? $term->name : $meta['meta_value'];
+							}
+
+							$description .= sprintf( __( '%s: %s', 'woocommerce-bookings' ), rawurldecode( $meta['meta_key'] ), rawurldecode( $meta_value ) ) . PHP_EOL;
+		 				}
 					}
-
-					$meta_value = $meta['meta_value'];
-
-					// Skip serialised meta
-					if ( is_serialized( $meta_value ) ) {
-						continue;
-					}
-
-					// Get attribute data
-					if ( taxonomy_exists( $meta['meta_key'] ) ) {
-						global $wpdb;
-						$term           = get_term_by( 'slug', $meta['meta_value'], $meta['meta_key'] );
-						$attribute_name = str_replace( 'pa_', '', wc_clean( $meta['meta_key'] ) );
-						$attribute      = $wpdb->get_var(
-							$wpdb->prepare( "
-									SELECT attribute_label
-									FROM {$wpdb->prefix}woocommerce_attribute_taxonomies
-									WHERE attribute_name = %s;
-								",
-								$attribute_name
-							)
-						);
-
-						$meta['meta_key']   = ( ! is_wp_error( $attribute ) && $attribute ) ? $attribute : $attribute_name;
-						$meta['meta_value'] = ( isset( $term->name ) ) ? $term->name : $meta['meta_value'];
-					}
-
-					$description .= sprintf( '%s: %s', rawurldecode( $meta['meta_key'] ), rawurldecode( $meta_value ) ) . PHP_EOL;
 				}
 			}
+		} else {
+			// there is no order -- just pull what we can from the booking
+			$product_id = $booking->product_id;
+			$product = wc_get_product( $product_id );
+			$summary .= ' - ' . $product->post->post_title;
 		}
 
 		// Set the event data
 		$data = array(
-			'summary'     => wp_kses_post( '#' . $booking->get_id() . ' - ' . ( $product ? $product->get_title() : __( 'Booking', 'woocommerce-bookings' ) ) ),
-			'description' => wp_kses_post( utf8_encode( $description ) ),
+			'summary'     => wp_kses_post( $summary ),
+			'description' => wp_kses_post( utf8_encode( $description ) )
 		);
 
 		// Set the event start and end dates
@@ -537,66 +539,63 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 			// as the cut off, so we need to add 24 hours to include our final 'end' day.
 			// https://developers.google.com/google-apps/calendar/v3/reference/events/insert
 			$data['end'] = array(
-				'date' => date( 'Y-m-d', ( $booking->get_end() + 1440 ) ),
+				'date' => date( 'Y-m-d', ( $booking->end + 1440 ) ),
 			);
+
 			$data['start'] = array(
-				'date' => date( 'Y-m-d', $booking->get_start() ),
+				'date' => date( 'Y-m-d', $booking->start ),
 			);
 		} else {
 			$data['end'] = array(
-				'dateTime' => date( 'Y-m-d\TH:i:s', $booking->get_end() ),
-				'timeZone' => $timezone,
+				'dateTime' => date( 'Y-m-d\TH:i:s', $booking->end ),
+				'timeZone' => $timezone
 			);
 
 			$data['start'] = array(
-				'dateTime' => date( 'Y-m-d\TH:i:s', $booking->get_start() ),
-				'timeZone' => $timezone,
+				'dateTime' => date( 'Y-m-d\TH:i:s', $booking->start ),
+				'timeZone' => $timezone
 			);
 		}
 
-		// Connection params.
+		$data = apply_filters( 'woocommerce_bookings_gcalendar_sync', $data, $booking );
+
+		// Connection params
 		$params = array(
 			'method'    => 'POST',
-			'body'      => json_encode( apply_filters( 'woocommerce_bookings_gcalendar_sync', $data, $booking ) ),
+			'body'      => json_encode( $data ),
 			'sslverify' => false,
 			'timeout'   => 60,
 			'headers'   => array(
 				'Content-Type'  => 'application/json',
-				'Authorization' => 'Bearer ' . $access_token,
-			),
+				'Authorization' => 'Bearer ' . $access_token
+			)
 		);
 
-		// Update event.
+		// Update event
 		if ( $event_id ) {
 			$api_url .= '/' . $event_id;
 			$params['method'] = 'PUT';
 		}
 
-		if ( 'yes' === $this->debug ) {
-			$this->log->add( $this->id, 'Synchronizing booking #' . $booking->get_id() . ' with Google Calendar...' );
+		if ( 'yes' == $this->debug ) {
+			$this->log->add( $this->id, 'Synchronizing booking #' . $booking->id . ' with Google Calendar...' );
 		}
 
 		$response = wp_remote_post( $api_url, $params );
 
 		if ( ! is_wp_error( $response ) && 200 == $response['response']['code'] && 'OK' == $response['response']['message'] ) {
-			if ( 'yes' === $this->debug ) {
+			if ( 'yes' == $this->debug ) {
 				$this->log->add( $this->id, 'Booking synchronized successfully!' );
 			}
+
 			// Updated the Google Calendar event ID
 			$response_data = json_decode( $response['body'], true );
-			$booking->set_google_calendar_event_id( wc_clean( $response_data['id'] ) );
+			update_post_meta( $booking->id, '_wc_bookings_gcalendar_event_id', $response_data['id'] );
 
-			/**
-			 * Save booking also calls $booking->status_transition() in which
-			 * infinite loop could happens.
-			 *
-			 * @see https://github.com/woocommerce/woocommerce-bookings/pull/1048
-			 */
-			$booking->skip_status_transition_events();
-			$booking->save();
-
-		} elseif ( 'yes' === $this->debug ) {
-			$this->log->add( $this->id, 'Error while synchronizing the booking #' . $booking->get_id() . ': ' . print_r( $response, true ) );
+		} else {
+			if ( 'yes' == $this->debug ) {
+				$this->log->add( $this->id, 'Error while synchronizing the booking #' . $booking->id . ': ' . print_r( $response, true ) );
+			}
 		}
 	}
 
@@ -611,6 +610,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 		if ( ! $this->is_edited_from_meta_box() ) {
 			return;
 		}
+
 		$this->maybe_sync_booking_from_status( $booking_id );
 	}
 
@@ -633,13 +633,10 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function remove_booking( $booking_id ) {
-		if ( 'wc_booking' !== get_post_type( $booking_id ) ) {
-			return;
-		}
-		$booking  = get_wc_booking( $booking_id );
-		$event_id = $booking->get_google_calendar_event_id();
+		$event_id = get_post_meta( $booking_id, '_wc_bookings_gcalendar_event_id', true );
 
 		if ( $event_id ) {
+			$booking      = get_wc_booking( $booking_id );
 			$api_url      = $this->calendars_uri . $this->calendar_id . '/events/' . $event_id;
 			$access_token = $this->get_access_token();
 			$params       = array(
@@ -647,27 +644,27 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 				'sslverify' => false,
 				'timeout'   => 60,
 				'headers'   => array(
-					'Authorization' => 'Bearer ' . $access_token,
-				),
+					'Authorization' => 'Bearer ' . $access_token
+				)
 			);
 
-			if ( 'yes' === $this->debug ) {
-				$this->log->add( $this->id, 'Removing booking #' . $booking->get_id() . ' with Google Calendar...' );
+			if ( 'yes' == $this->debug ) {
+				$this->log->add( $this->id, 'Removing booking #' . $booking->id . ' with Google Calendar...' );
 			}
 
 			$response = wp_remote_post( $api_url, $params );
 
 			if ( ! is_wp_error( $response ) && 204 == $response['response']['code'] ) {
-				if ( 'yes' === $this->debug ) {
+				if ( 'yes' == $this->debug ) {
 					$this->log->add( $this->id, 'Booking removed successfully!' );
 				}
 
 				// Remove event ID
-				$booking->set_google_calendar_event_id( '' );
-				$booking->save();
+				delete_post_meta( $booking->id, '_wc_bookings_gcalendar_event_id' );
+
 			} else {
-				if ( 'yes' === $this->debug ) {
-					$this->log->add( $this->id, 'Error while removing the booking #' . $booking->get_id() . ': ' . print_r( $response, true ) );
+				if ( 'yes' == $this->debug ) {
+					$this->log->add( $this->id, 'Error while removing the booking #' . $booking->id . ': ' . print_r( $response, true ) );
 				}
 			}
 		}
@@ -687,7 +684,7 @@ class WC_Bookings_Google_Calendar_Integration extends WC_Integration {
 
 		if ( 'cancelled' == $status ) {
 			$this->remove_booking( $booking_id );
-		} elseif ( in_array( $status, array( 'confirmed', 'paid', 'complete' ) ) ) {
+		} else if ( in_array( $status, array( 'confirmed', 'paid', 'complete' ) ) ) {
 			$this->sync_booking( $booking_id );
 		}
 	}

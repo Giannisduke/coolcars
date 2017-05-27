@@ -16,7 +16,7 @@ class WC_Booking_Form_Date_Picker extends WC_Booking_Form_Picker {
 
 	/**
 	 * Constructor
-	 * @param WC_Booking_Form $booking_form The booking form which called this picker
+	 * @param object $booking_form The booking form which called this picker
 	 */
 	public function __construct( $booking_form ) {
 		$this->booking_form                    = $booking_form;
@@ -31,12 +31,12 @@ class WC_Booking_Form_Date_Picker extends WC_Booking_Form_Picker {
 		$this->args['duration_type']           = $this->booking_form->product->get_duration_type();
 		$this->args['duration_unit']           = $this->booking_form->product->get_duration_unit();
 		$this->args['is_range_picker_enabled'] = $this->booking_form->product->is_range_picker_enabled();
-		$this->args['display']                 = $this->booking_form->product->get_calendar_display_mode();
+		$this->args['display']                 = $this->booking_form->product->wc_booking_calendar_display_mode;
 		$this->args['availability_rules']      = array();
 		$this->args['availability_rules'][0]   = $this->booking_form->product->get_availability_rules();
 		$this->args['label']                   = $this->get_field_label( __( 'Date', 'woocommerce-bookings' ) );
 		$this->args['default_date']            = date( 'Y-m-d', $this->get_default_date() );
-		$this->args['product_type']            = $this->booking_form->product->get_type();
+		$this->args['product_type']            = $this->booking_form->product->product_type;
 
 		if ( $this->booking_form->product->has_resources() ) {
 			foreach ( $this->booking_form->product->get_resources() as $resource ) {
@@ -130,7 +130,7 @@ class WC_Booking_Form_Date_Picker extends WC_Booking_Form_Picker {
 	 * Find days which are buffer days so they can be grayed out on the date picker
 	 */
 	protected function find_buffer_blocks() {
-		$buffer_days = WC_Bookings_Controller::find_buffer_day_blocks( $this->booking_form->product );
+		$buffer_days = WC_Bookings_Controller::find_buffer_day_blocks( $this->booking_form->product->id );
 		$this->args['buffer_days'] = $buffer_days;
 	}
 
@@ -138,7 +138,7 @@ class WC_Booking_Form_Date_Picker extends WC_Booking_Form_Picker {
 	 * Finds days which are fully booked already so they can be blocked on the date picker
 	 */
 	protected function find_fully_booked_blocks() {
-		$booked = WC_Bookings_Controller::find_booked_day_blocks( $this->booking_form->product->get_id() );
+		$booked = WC_Bookings_Controller::find_booked_day_blocks( $this->booking_form->product->id );
 		$this->args['partially_booked_days'] = $booked['partially_booked_days'];
 		$this->args['fully_booked_days']     = $booked['fully_booked_days'];
 	}

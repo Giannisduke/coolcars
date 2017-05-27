@@ -1,14 +1,14 @@
 /* globals: jQuery, wc_bookings_booking_form, booking_form_params */
-
-// globally accessible for tests
-wc_bookings_date_picker = {};
-
 jQuery( function( $ ) {
 	var wc_bookings_timeout      = 0,
-		wc_bookings_date_picker_object  = {
+		wc_bookings_date_picker  = {
 		init: function() {
 			$( 'body' ).on( 'change', '#wc_bookings_field_duration, #wc_bookings_field_resource', this.date_picker_init );
 			$( 'body' ).on( 'click', '.wc-bookings-date-picker legend small.wc-bookings-date-picker-choose-date', this.toggle_calendar );
+
+$( 'body' ).on( 'click', '.icon_r_date', this.toggle_calendar );
+//$( 'body' ).on( 'click', '.alert-success', this.toggle_calendar );
+
 			$( 'body' ).on( 'input', '.booking_date_year, .booking_date_month, .booking_date_day', this.input_date_trigger );
 			$( 'body' ).on( 'keypress', '.booking_date_year, .booking_date_month, .booking_date_day', this.input_date_keypress );
 			$( 'body' ).on( 'keypress', '.booking_to_date_year, .booking_to_date_month, .booking_to_date_day', this.input_date_keypress );
@@ -36,17 +36,17 @@ jQuery( function( $ ) {
 		},
 		calc_duration: function( picker ) {
 			var form     = picker.closest('form'),
-				fieldSet = picker.closest('fieldset'),
+				fieldset = picker.closest('fieldset'),
 				unit     = picker.data( 'duration-unit' );
 
 			setTimeout( function() {
 				var days    = 1,
-					e_year  = parseInt( fieldSet.find( 'input.booking_to_date_year' ).val(), 10 ),
-					e_month = parseInt( fieldSet.find( 'input.booking_to_date_month' ).val(), 10 ),
-					e_day   = parseInt( fieldSet.find( 'input.booking_to_date_day' ).val(), 10 ),
-					s_year  = parseInt( fieldSet.find( 'input.booking_date_year' ).val(), 10 ),
-					s_month = parseInt( fieldSet.find( 'input.booking_date_month' ).val(), 10 ),
-					s_day   = parseInt( fieldSet.find( 'input.booking_date_day' ).val(), 10 );
+					e_year  = parseInt( fieldset.find( 'input.booking_to_date_year' ).val(), 10 ),
+					e_month = parseInt( fieldset.find( 'input.booking_to_date_month' ).val(), 10 ),
+					e_day   = parseInt( fieldset.find( 'input.booking_to_date_day' ).val(), 10 ),
+					s_year  = parseInt( fieldset.find( 'input.booking_date_year' ).val(), 10 ),
+					s_month = parseInt( fieldset.find( 'input.booking_date_month' ).val(), 10 ),
+					s_day   = parseInt( fieldset.find( 'input.booking_date_day' ).val(), 10 );
 
 				if ( e_year && e_month >= 0 && e_day && s_year && s_month >= 0 && s_day ) {
 					var s_date = new Date( Date.UTC( s_year, s_month - 1, s_day ) ),
@@ -262,18 +262,17 @@ jQuery( function( $ ) {
 				the_date = new Date( date ),
 				year     = the_date.getFullYear(),
 				month    = the_date.getMonth() + 1,
-				day      = the_date.getDate(),
-				ymdIndex = year + '-' + month + '-' + day;
+				day      = the_date.getDate();
 
 			// Fully booked?
-			if ( fully_booked_days[ ymdIndex ] ) {
-				if ( fully_booked_days[ ymdIndex ][0] || fully_booked_days[ ymdIndex ][ resource_id ] ) {
+			if ( fully_booked_days[ year + '-' + month + '-' + day ] ) {
+				if ( fully_booked_days[ year + '-' + month + '-' + day ][0] || fully_booked_days[ year + '-' + month + '-' + day ][ resource_id ] ) {
 					return [ false, 'fully_booked', booking_form_params.i18n_date_fully_booked ];
 				}
 			}
 
 			// Buffer days?
-			if ( buffer_days && buffer_days && buffer_days[ ymdIndex ] ) {
+			if ( buffer_days && buffer_days && buffer_days[ year + '-' + month + '-' + day ] ) {
 				return [ false, 'not_bookable', booking_form_params.i18n_date_unavailable ];
 			}
 
@@ -282,8 +281,8 @@ jQuery( function( $ ) {
 			}
 
 			// Apply partially booked CSS class.
-			if ( partially_booked_days && partially_booked_days[ ymdIndex ] ) {
-				if ( partially_booked_days[ ymdIndex ][0] || partially_booked_days[ ymdIndex ][ resource_id ] ) {
+			if ( partially_booked_days && partially_booked_days[ year + '-' + month + '-' + day ] ) {
+				if ( partially_booked_days[ year + '-' + month + '-' + day ][0] || partially_booked_days[ year + '-' + month + '-' + day ][ resource_id ] ) {
 					css_classes = css_classes + 'partial_booked ';
 				}
 			}
@@ -376,9 +375,8 @@ jQuery( function( $ ) {
 				}
 
 				// Fully booked in entire block?
-				var ymdIndex = year + '-' + month + '-' + day;
-				if ( args.fully_booked_days[ ymdIndex ] ) {
-					if ( args.fully_booked_days[ ymdIndex ][0] || args.fully_booked_days[ ymdIndex ][ args.resource_id ] ) {
+				if ( args.fully_booked_days[ year + '-' + month + '-' + day ] ) {
+					if ( args.fully_booked_days[ year + '-' + month + '-' + day ][0] || args.fully_booked_days[ year + '-' + month + '-' + day ][ args.resource_id ] ) {
 						bookable = false;
 					}
 				}
@@ -405,19 +403,12 @@ jQuery( function( $ ) {
 		 * @returns boolean
 		 */
 		is_resource_available_on_date: function( args, rules ) {
-
-			if ( 'object'!== typeof args || 'object' !== typeof rules ) {
-				return false;
-			}
-
-			var defaultAvailability = args.default_availability,
+			var availability = args.default_availability,
 				year         = args.date.getFullYear(),
-				month        = args.date.getMonth() + 1, // months start at 0
+				month        = args.date.getMonth() + 1,
 				day          = args.date.getDate(),
-				day_of_week  = args.date.getDay();
-
-			var	firstOfJanuary = new Date( year, 0, 1 );
-			var week =  Math.ceil( ( ( (args.date - firstOfJanuary ) / 86400000) + firstOfJanuary.getDay() + 1 ) / 7 );
+				day_of_week  = args.date.getDay(),
+				week         = $.datepicker.iso8601Week( args.date );
 
 			// Sunday is 0, Monday is 1, and so on.
 			if ( day_of_week === 0 ) {
@@ -430,59 +421,35 @@ jQuery( function( $ ) {
 				return false;
 			}
 
-			var minutesAvailableForDay    = [];
-			var minutesForADay = _.range( 1, 1440 ,1 );
-			// Ensure that the minutes are set when the all slots are available by default.
-			if ( defaultAvailability ){
-				minutesAvailableForDay = minutesForADay;
-			}
-
 			$.each( rules, function( index, rule ) {
 				var type  = rule['type'];
-				var range = rule['range'];
+				var rules = rule['range'];
 				try {
 					switch ( type ) {
 						case 'months':
-							if ( typeof range[ month ] != 'undefined' ) {
-
-								if ( range[ month ] ) {
-									minutesAvailableForDay = minutesForADay;
-								} else{
-									minutesAvailableForDay = [];
-								}
+							if ( typeof rules[ month ] != 'undefined' ) {
+								availability = rules[ month ];
 								return true; // go to the next rule
 							}
-							break;
+						break;
 						case 'weeks':
-							if ( typeof range[ week ] != 'undefined' ) {
-								if( range[ week ] ){
-									minutesAvailableForDay = minutesForADay;
-								} else{
-									minutesAvailableForDay = [];
-								}
+							if ( typeof rules[ week ] != 'undefined' ) {
+								availability = rules[ week ];
 								return true; // go to the next rule
 							}
-							break;
+						break;
 						case 'days':
-							if ( typeof range[ day_of_week ] != 'undefined' ) {
-								if( range[ day_of_week ] ){
-									minutesAvailableForDay = minutesForADay;
-								} else{
-									minutesAvailableForDay = [];
-								}
+							if ( typeof rules[ day_of_week ] != 'undefined' ) {
+								availability = rules[ day_of_week ];
 								return true; // go to the next rule
 							}
-							break;
+						break;
 						case 'custom':
-							if ( typeof range[ year ][ month ][ day ] != 'undefined' ) {
-								if( range[ year ][ month ][ day ]){
-									minutesAvailableForDay = minutesForADay;
-								} else{
-									minutesAvailableForDay = [];
-								}
+							if ( typeof rules[ year ][ month ][ day ] != 'undefined' ) {
+								availability = rules[ year ][ month ][ day ];
 								return true; // go to the next rule
 							}
-							break;
+						break;
 						case 'time':
 						case 'time:1':
 						case 'time:2':
@@ -491,49 +458,29 @@ jQuery( function( $ ) {
 						case 'time:5':
 						case 'time:6':
 						case 'time:7':
-							if ( day_of_week === range.day || 0 === range.day ) {
-
-								var fromHour = parseInt( range.from.split(':')[0] );
-								var fromMinute = parseInt( range.from.split(':')[1] );
-								var toHour = parseInt( range.to.split(':')[0] );
-								var toMinute = parseInt( range.to.split(':')[1] );
-
-								// each minute in the day gets a number from 1 to 1440
-								var fromMinuteNumber = fromMinute + ( fromHour * 60 );
-								var toMinuteNumber = toMinute + ( toHour * 60 );
-								var minutesAvailableForTime = _.range(fromMinuteNumber, toMinuteNumber, 1);
-
-								if ( range.rule ) {
-									minutesAvailableForDay = _.union(minutesAvailableForDay, minutesAvailableForTime);
-								} else {
-									minutesAvailableForDay = _.difference(minutesAvailableForDay, minutesAvailableForTime);
-								}
-
-								return true;
+							if ( false === args.default_availability && ( day_of_week === rules.day || 0 === rules.day ) ) {
+								availability = rules.rule;
+								return true; // go to the next rule
 							}
-							break;
+						break;
 						case 'time:range':
-							if ( false === defaultAvailability && ( 'undefined' !== typeof range[ year ][ month ][ day ] ) ) {
+							if ( false === args.default_availability && ( typeof rules[ year ][ month ][ day ] != 'undefined' ) ) {
 								// This function only checks to see if a date is available and this rule
 								// only covers a few hours in a given date so as far as this rule is concerned a given
 								// date may always be available as there are hours outside of the scope of this rule.
-								minutesAvailableForDay = minutesForADay;
+								availability = true;
 							}
-							break;
+						break;
 					}
 				} catch( err ) {
 					return true; // go to the next rule
 				}
+
 			});
 
-			return ! _.isEmpty( minutesAvailableForDay );
+			return availability;
+		},
 
-		},
-		get_week_number: function( date ){
-			var January1 = new Date( date.getFullYear(), 0, 1 );
-			var week     = Math.ceil( ( ( ( date - January1 ) / 86400000) + January1.getDay() + 1 ) / 7 );
-			return week;
-		},
 		has_available_resource: function( args ) {
 			for ( var resource_id in args.availability ) {
 				resource_id = parseInt( resource_id, 10 );
@@ -554,7 +501,5 @@ jQuery( function( $ ) {
 		}
 	};
 
-	// export globally
-	wc_bookings_date_picker = wc_bookings_date_picker_object;
 	wc_bookings_date_picker.init();
 });

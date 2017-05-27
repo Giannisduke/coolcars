@@ -1,50 +1,27 @@
 <div id="bookings_pricing" class="panel woocommerce_options_panel">
 	<div class="options_group">
 
-		<?php woocommerce_wp_text_input( array(
-			'id'                => '_wc_booking_cost',
-			'label'             => __( 'Base cost', 'woocommerce-bookings' ),
-			'description'       => __( 'One-off cost for the booking as a whole.', 'woocommerce-bookings' ),
-			'value'             => $bookable_product->get_cost( 'edit' ),
-			'type'              => 'number',
-			'desc_tip'          => true,
-			'custom_attributes' => array(
-				'min'           => '',
-				'step' 	        => '0.01',
-			),
-		) ); ?>
+		<?php woocommerce_wp_text_input( array( 'id' => '_wc_booking_cost', 'label' => __( 'Base cost', 'woocommerce-bookings' ), 'description' => __( 'One-off cost for the booking as a whole.', 'woocommerce-bookings' ), 'value' => get_post_meta( $post_id, '_wc_booking_cost', true ), 'type' => 'number', 'desc_tip' => true, 'custom_attributes' => array(
+			'min'   => '',
+			'step' 	=> '0.01'
+		) ) ); ?>
 
-		<?php do_action( 'woocommerce_bookings_after_booking_base_cost', $post->ID ); ?>
+        <?php do_action( 'woocommerce_bookings_after_booking_base_cost', $post_id ); ?>
 
-		<?php woocommerce_wp_text_input( array(
-			'id'                => '_wc_booking_base_cost',
-			'label'             => __( 'Block cost', 'woocommerce-bookings' ),
-			'description'       => __( 'This is the cost per block booked. All other costs (for resources and persons) are added to this.', 'woocommerce-bookings' ),
-			'value'             => $bookable_product->get_base_cost( 'edit' ),
-			'type'              => 'number',
-			'desc_tip'          => true,
-			'custom_attributes' => array(
-				'min'           => '',
-				'step' 	        => '0.01',
-			),
-		) ); ?>
+		<?php woocommerce_wp_text_input( array( 'id' => '_wc_booking_base_cost', 'label' => __( 'Block cost', 'woocommerce-bookings' ), 'description' => __( 'This is the cost per block booked. All other costs (for resources and persons) are added to this.', 'woocommerce-bookings' ), 'value' => get_post_meta( $post_id, '_wc_booking_base_cost', true ), 'type' => 'number', 'desc_tip' => true, 'custom_attributes' => array(
+			'min'   => '',
+			'step' 	=> '0.01'
+		) ) ); ?>
 
-		<?php do_action( 'woocommerce_bookings_after_booking_block_cost', $post->ID ); ?>
+        <?php do_action( 'woocommerce_bookings_after_booking_block_cost', $post_id ); ?>
 
-		<?php woocommerce_wp_text_input( array(
-			'id'                => '_wc_display_cost',
-			'label'             => __( 'Display cost', 'woocommerce-bookings' ),
-			'description'       => __( 'The cost is displayed to the user on the frontend. Leave blank to have it calculated for you. If a booking has varying costs, this will be prefixed with the word "from:".', 'woocommerce-bookings' ),
-			'value'             => $bookable_product->get_display_cost( 'edit' ),
-			'type'              => 'number',
-			'desc_tip'          => true,
-			'custom_attributes' => array(
-				'min'           => '',
-				'step' 	        => '0.01',
-			),
-		) ); ?>
+		<?php woocommerce_wp_text_input( array( 'id' => '_wc_display_cost', 'label' => __( 'Display cost', 'woocommerce-bookings' ), 'description' => __( 'The cost is displayed to the user on the frontend. Leave blank to have it calculated for you. If a booking has varying costs, this will be prefixed with the word "from:".', 'woocommerce-bookings' ), 'value' => get_post_meta( $post_id, '_wc_display_cost', true ), 'type' => 'number', 'desc_tip' => true, 'custom_attributes' => array(
+			'min'   => '',
+			'step' 	=> '0.01'
+		) ) ); ?>
 
-		<?php do_action( 'woocommerce_bookings_after_display_cost', $post->ID ); ?>
+        <?php do_action( 'woocommerce_bookings_after_display_cost', $post_id ); ?>
+
 	</div>
 	<div class="options_group">
 		<div class="table_grid">
@@ -76,9 +53,9 @@
 				</tfoot>
 				<tbody id="pricing_rows">
 					<?php
-						$values = $bookable_product->get_pricing( 'edit' );
+						$values = get_post_meta( $post_id, '_wc_booking_pricing', true );
 						if ( ! empty( $values ) && is_array( $values ) ) {
-							foreach ( $values as $index => $pricing ) {
+							foreach ( $values as $pricing ) {
 								include( 'html-booking-pricing-fields.php' );
 
 								/**
@@ -106,7 +83,7 @@
 			</table>
 		</div>
 
-		<?php do_action( 'woocommerce_bookings_after_bookings_pricing', $post->ID ); ?>
+        <?php do_action( 'woocommerce_bookings_after_bookings_pricing', $post_id ); ?>
 
 	</div>
 </div>
