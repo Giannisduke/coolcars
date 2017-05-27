@@ -98,3 +98,19 @@ $wp_customize->add_control( new WP_Customize_Image_Control( $wp_customize, 'them
 ) ) );
 }
 add_action('customize_register', 'themeslug_theme_customizer');
+
+add_filter( 'woocommerce_add_cart_item_data', 'ps_empty_cart', 10,  3);
+
+function ps_empty_cart( $cart_item_data, $product_id, $variation_id ) {
+
+    global $woocommerce;
+    $woocommerce->cart->empty_cart();
+
+    // Do nothing with the data and return
+    return $cart_item_data;
+}
+
+remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_title', 5, 0) ;
+add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_title', 5, 0) ;
+remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_price') ;
+add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_price', 10, 0) ;

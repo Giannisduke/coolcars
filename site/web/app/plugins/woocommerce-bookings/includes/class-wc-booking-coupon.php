@@ -30,7 +30,7 @@ class WC_Booking_Coupon {
 		add_filter( 'woocommerce_coupon_discount_types', array( $this, 'add_coupon_type' ) );
 		add_filter( 'woocommerce_coupon_is_valid', array( $this, 'is_coupon_valid' ), 10, 2 );
 		add_filter( 'woocommerce_get_discounted_price', array( $this, 'apply_discount' ), 10, 3 );
-		add_filter( 'woocommerce_coupon_discount_amount_html', array( $this, 'discount_amount_html'), 10, 2 );
+		add_filter( 'woocommerce_coupon_discount_amount_html', array( $this, 'discount_amount_html' ), 10, 2 );
 	}
 
 	/**
@@ -59,7 +59,7 @@ class WC_Booking_Coupon {
 		}
 
 		if ( ! WC()->cart->is_empty() ) {
-			foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$product = wc_get_product( $cart_item['product_id'] );
 				if ( $product->has_persons() ) {
 					return true;
@@ -80,10 +80,10 @@ class WC_Booking_Coupon {
 	 * @return float Discounted price
 	 */
 	public function apply_discount( $original_price, $cart_item, $cart ) {
-		$product_id = $cart_item['data']->id;
-		$product = wc_get_product( $product_id );
+		$product_id = is_callable( array( $cart_item['data'], 'get_id' ) ) ? $cart_item['data']->get_id() : $cart_item['data']->id;
+		$product    = wc_get_product( $product_id );
 
-		if ( 'booking' !== $product->product_type ) {
+		if ( ! $product->is_type( 'booking' ) ) {
 			return $original_price;
 		}
 
@@ -110,7 +110,7 @@ class WC_Booking_Coupon {
 						$price = 0;
 					}
 
-					if ( empty ( $this->amounts[ $code ] ) ) {
+					if ( empty( $this->amounts[ $code ] ) ) {
 						$this->amounts[ $code ] = 0;
 					}
 					$this->amounts[ $code ] += $discount_amount;

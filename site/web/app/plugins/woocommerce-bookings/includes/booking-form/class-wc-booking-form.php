@@ -44,15 +44,15 @@ class WC_Booking_Form {
 			'dayNamesMin'                => array_values( $wp_locale->weekday_initial ),
 			'firstDay'                   => get_option( 'start_of_week' ),
 			'current_time'               => date( 'Ymd', current_time( 'timestamp' ) ),
-			'check_availability_against' => $this->product->wc_booking_check_availability_against,
-			'duration_unit'              => $this->product->wc_booking_duration_unit,
-			'resources_assignment'       => ( ! $this->product->has_resources() ) ? 'customer' : $this->product->wc_booking_resources_assignment,
+			'check_availability_against' => $this->product->get_check_start_block_only() ? 'start' : '',
+			'duration_unit'              => $this->product->get_duration_unit(),
+			'resources_assignment'       => ! $this->product->has_resources() ? 'customer' : $this->product->get_resources_assignment(),
 		);
 
-		if ( in_array( $this->product->wc_booking_duration_unit, array( 'minute', 'hour' ) ) ) {
+		if ( in_array( $this->product->get_duration_unit(), array( 'minute', 'hour' ) ) ) {
 			$wc_bookings_booking_form_args['booking_duration'] = 1;
 		} else {
-			$wc_bookings_booking_form_args['booking_duration']        = $this->product->wc_booking_duration;
+			$wc_bookings_booking_form_args['booking_duration']        = $this->product->get_duration();
 			$wc_bookings_booking_form_args['booking_duration_type']   = $this->product->get_duration_type();
 
 			if ( 'customer' == $wc_bookings_booking_form_args['booking_duration_type'] ) {
@@ -66,7 +66,7 @@ class WC_Booking_Form {
 
 		wp_enqueue_script( 'wc-bookings-booking-form', WC_BOOKINGS_PLUGIN_URL . '/assets/js/booking-form' . $suffix . '.js', array( 'jquery', 'jquery-blockui' ), WC_BOOKINGS_VERSION, true );
 		wp_localize_script( 'wc-bookings-booking-form', 'wc_bookings_booking_form', $wc_bookings_booking_form_args );
-		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-booking-form', 'jquery-ui-datepicker' ), WC_BOOKINGS_VERSION, true );
+		wp_register_script( 'wc-bookings-date-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/date-picker' . $suffix . '.js', array( 'wc-bookings-booking-form', 'jquery-ui-datepicker', 'underscore' ), WC_BOOKINGS_VERSION, true );
 		wp_register_script( 'wc-bookings-month-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/month-picker' . $suffix . '.js', array( 'wc-bookings-booking-form' ), WC_BOOKINGS_VERSION, true );
 		wp_register_script( 'wc-bookings-time-picker', WC_BOOKINGS_PLUGIN_URL . '/assets/js/time-picker' . $suffix . '.js', array( 'wc-bookings-booking-form' ), WC_BOOKINGS_VERSION, true );
 
@@ -95,10 +95,9 @@ class WC_Booking_Form {
 
 		// Add fields in order
 		$this->duration_field();
-
+		$this->persons_field();
 		$this->resources_field();
 		$this->date_field();
-		$this->persons_field();
 
 		$this->fields = apply_filters( 'booking_form_fields', $this->fields );
 	}
@@ -115,55 +114,55 @@ class WC_Booking_Form {
 	 */
 	private function duration_field() {
 		// Customer defined bookings
-		if ( 'customer' == $this->product->wc_booking_duration_type ) {
+		if ( 'customer' === $this->product->get_duration_type() ) {
 			$after = '';
-			switch ( $this->product->wc_booking_duration_unit ) {
+			switch ( $this->product->get_duration_unit() ) {
 				case 'month' :
-					if ( $this->product->wc_booking_duration > 1 ) {
-						$after = sprintf( __( '&times; %s Months', 'woocommerce-bookings' ), $this->product->wc_booking_duration );
+					if ( $this->product->get_duration() > 1 ) {
+						$after = sprintf( __( '&times; %s Months', 'woocommerce-bookings' ), $this->product->get_duration() );
 					} else {
 						$after = __( 'Month(s)', 'woocommerce-bookings' );
 					}
 					break;
 				case 'week' :
-					if ( $this->product->wc_booking_duration > 1 ) {
-						$after = sprintf( __( '&times; %s weeks', 'woocommerce-bookings' ), $this->product->wc_booking_duration );
+					if ( $this->product->get_duration() > 1 ) {
+						$after = sprintf( __( '&times; %s weeks', 'woocommerce-bookings' ), $this->product->get_duration() );
 					} else {
 						$after = __( 'Week(s)', 'woocommerce-bookings' );
 					}
 					break;
 				case 'day' :
-					if ( $this->product->wc_booking_duration % 7 ) {
-						if ( $this->product->wc_booking_duration > 1 ) {
-							$after = sprintf( __( '&times; %s days', 'woocommerce-bookings' ), $this->product->wc_booking_duration );
+					if ( $this->product->get_duration() % 7 ) {
+						if ( $this->product->get_duration() > 1 ) {
+							$after = sprintf( __( '&times; %s days', 'woocommerce-bookings' ), $this->product->get_duration() );
 						} else {
 							$after = __( 'Day(s)', 'woocommerce-bookings' );
 						}
 					} else {
-						if ( 1 == ( $this->product->wc_booking_duration / 7 ) ) {
+						if ( 1 == ( $this->product->get_duration() / 7 ) ) {
 							$after = __( 'Week(s)', 'woocommerce-bookings' );
 						} else {
-							$after = sprintf( __( '&times; %s weeks', 'woocommerce-bookings' ), $this->product->wc_booking_duration / 7 );
+							$after = sprintf( __( '&times; %s weeks', 'woocommerce-bookings' ), $this->product->get_duration() / 7 );
 						}
 					}
 					break;
 				case 'night' :
-					if ( $this->product->wc_booking_duration > 1 ) {
-								$after = sprintf( __( '&times; %s nights', 'woocommerce-bookings' ), $this->product->wc_booking_duration );
+					if ( $this->product->get_duration() > 1 ) {
+								$after = sprintf( __( '&times; %s nights', 'woocommerce-bookings' ), $this->product->get_duration() );
 					} else {
 							$after = __( 'Nights(s)', 'woocommerce-bookings' );
 					}
 					break;
 				case 'hour' :
-					if ( $this->product->wc_booking_duration > 1 ) {
-						$after = sprintf( __( '&times; %s hours', 'woocommerce-bookings' ), $this->product->wc_booking_duration );
+					if ( $this->product->get_duration() > 1 ) {
+						$after = sprintf( __( '&times; %s hours', 'woocommerce-bookings' ), $this->product->get_duration() );
 					} else {
 						$after = __( 'Hour(s)', 'woocommerce-bookings' );
 					}
 					break;
 				case 'minute' :
-					if ( $this->product->wc_booking_duration > 1 ) {
-						$after = sprintf( __( '&times; %s minutes', 'woocommerce-bookings' ), $this->product->wc_booking_duration );
+					if ( $this->product->get_duration() > 1 ) {
+						$after = sprintf( __( '&times; %s minutes', 'woocommerce-bookings' ), $this->product->get_duration() );
 					} else {
 						$after = __( 'Minute(s)', 'woocommerce-bookings' );
 					}
@@ -175,8 +174,8 @@ class WC_Booking_Form {
 				'name'  => 'duration',
 				'label' => __( 'Duration', 'woocommerce-bookings' ),
 				'after' => $after,
-				'min'   => $this->product->wc_booking_min_duration,
-				'max'   => $this->product->wc_booking_max_duration,
+				'min'   => $this->product->get_min_duration(),
+				'max'   => $this->product->get_max_duration(),
 				'step'  => 1,
 			) );
 		}
@@ -192,17 +191,17 @@ class WC_Booking_Form {
 				$person_types = $this->product->get_person_types();
 
 				foreach ( $person_types as $person_type ) {
-					$min_person_type_persons = get_post_meta( $person_type->ID, 'min', true );
-					$max_person_type_persons = get_post_meta( $person_type->ID, 'max', true );
+					$min_person_type_persons = $person_type->get_min();
+					$max_person_type_persons = $person_type->get_max();
 
 					$this->add_field( array(
 						'type'  => 'number',
 						'step'  => 1,
 						'min'   => is_numeric( $min_person_type_persons ) ? $min_person_type_persons : 0,
-						'max'   => ! empty( $max_person_type_persons ) ? absint( $max_person_type_persons ) : $this->product->wc_booking_max_persons_group,
-						'name'  => 'persons_' . $person_type->ID,
-						'label' => $person_type->post_title,
-						'after' => $person_type->post_excerpt,
+						'max'   => ! empty( $max_person_type_persons ) ? absint( $max_person_type_persons ) : $this->product->get_max_persons(),
+						'name'  => 'persons_' . $person_type->get_id(),
+						'label' => $person_type->get_name(),
+						'after' => $person_type->get_description(),
 					) );
 				}
 			} else {
@@ -223,35 +222,33 @@ class WC_Booking_Form {
 	 */
 	private function resources_field() {
 		// Resources field
-		if ( 'yes' != $this->product->wc_booking_has_resources
-		     || 'customer' != $this->product->wc_booking_resources_assignment ) {
+		if ( ! $this->product->has_resources() || ! $this->product->is_resource_assignment_type( 'customer' ) ) {
 			return;
 		}
 
 		$resources          = $this->product->get_resources();
 		$resource_options   = array();
-		$data               = array();
 
 		foreach ( $resources as $resource ) {
-			$cost_plus_base  = ( $resource->get_base_cost() + $resource->get_block_cost() + $this->product->wc_booking_base_cost + $this->product->wc_booking_cost );
+			$cost_plus_base  = $resource->get_base_cost() + $this->product->get_base_cost() + $this->product->get_cost();
 			$additional_cost = array();
 
 			if ( $resource->get_base_cost() && $this->product->get_base_cost() < $cost_plus_base ) {
 				// if display cost price is set, don't calculate the difference
-				if ( '' !== $this->product->wc_display_cost ) {
+				if ( '' !== $this->product->get_display_cost() ) {
 					$additional_cost[] = '+' . wc_price( $cost_plus_base );
 				} else {
-					$additional_cost[] = '+' . wc_price( $cost_plus_base - $this->product->get_base_cost() );
+					$additional_cost[] = '+' . wc_price( (float) $cost_plus_base - (float) $this->product->get_base_cost() );
 				}
 			}
 
-			if ( $resource->get_block_cost() && empty( $this->product->wc_display_cost ) ) {
+			if ( $resource->get_block_cost() && ! $this->product->get_display_cost() ) {
 
 				$duration_unit = $this->product->get_duration_unit();
 				if ( in_array( $duration_unit, array( 'minute', 'hour' ) ) ) {
 					$duration_unit = __( 'block', 'woocommerce-bookings' );
 				}
-				$additional_cost[] = sprintf( __( '%1$1s per %2$2s', 'woocommerce-bookings' ), wc_price( $cost_plus_base ), $duration_unit );
+				$additional_cost[] = sprintf( __( '+%1$1s per %2$2s', 'woocommerce-bookings' ), wc_price( $resource->get_block_cost() ), $duration_unit );
 			}
 
 			if ( $additional_cost ) {
@@ -263,12 +260,12 @@ class WC_Booking_Form {
 			$resource_options[ $resource->ID ] = $resource->post_title . apply_filters( 'woocommerce_bookings_resource_additional_cost_string', $additional_cost_string, $resource );
 		}
 
-		$label = $this->product->wc_booking_resouce_label ? $this->product->wc_booking_resouce_label : __( 'Type', 'woocommerce-bookings' );
+		$label = $this->product->get_resource_label() ? $this->product->get_resource_label() : __( 'Type', 'woocommerce-bookings' );
 		$this->add_field( array(
 			'type'    => 'select',
 			'name'    => 'resource',
 			'label'   => $label,
-			'class'   => array( 'wc_booking_field_' . sanitize_title( $this->product->wc_booking_resouce_label ) ),
+			'class'   => array( 'wc_booking_field_' . sanitize_title( $this->product->get_resource_label() ) ),
 			'options' => $resource_options,
 		) );
 	}
@@ -314,7 +311,7 @@ class WC_Booking_Form {
 			'name'  => '',
 			'class' => array(),
 			'label' => '',
-			'type'  => 'text'
+			'type'  => 'text',
 		);
 
 		$field = wp_parse_args( $field, $default );
@@ -357,13 +354,13 @@ class WC_Booking_Form {
 			'_year'    => '',
 			'_month'   => '',
 			'_day'     => '',
-			'_persons' => array()
+			'_persons' => array(),
 		);
 
 		// Get date fields (y, m, d)
 		if ( ! empty( $posted['wc_bookings_field_start_date_year'] ) && ! empty( $posted['wc_bookings_field_start_date_month'] ) && ! empty( $posted['wc_bookings_field_start_date_day'] ) ) {
 			$data['_year']  = absint( $posted['wc_bookings_field_start_date_year'] );
-			$data['_year']  = $data['_year'] ? $data['_year'] : date('Y');
+			$data['_year']  = $data['_year'] ? $data['_year'] : date( 'Y' );
 			$data['_month'] = absint( $posted['wc_bookings_field_start_date_month'] );
 			$data['_day']   = absint( $posted['wc_bookings_field_start_date_day'] );
 			$data['_date']  = $data['_year'] . '-' . $data['_month'] . '-' . $data['_day'];
@@ -398,7 +395,8 @@ class WC_Booking_Form {
 				$person_types = $this->product->get_person_types();
 
 				foreach ( $person_types as $person_type ) {
-					if ( absint( $posted[ 'wc_bookings_field_persons_' . $person_type->ID ] ) > 0 ) {
+					if ( isset( $posted[ 'wc_bookings_field_persons_' . $person_type->ID ] )
+					     && absint( $posted[ 'wc_bookings_field_persons_' . $person_type->ID ] ) > 0 ) {
 						$data[ $person_type->post_title ]     = absint( $posted[ 'wc_bookings_field_persons_' . $person_type->ID ] );
 						$data['_persons'][ $person_type->ID ] = $data[ $person_type->post_title ];
 					}
@@ -408,13 +406,13 @@ class WC_Booking_Form {
 				$data['_persons'][0]                             = absint( $posted['wc_bookings_field_persons'] );
 			}
 
-			if ( 'yes' == $this->product->wc_booking_person_qty_multiplier ) {
+			if ( $this->product->get_has_person_qty_multiplier() ) {
 				$data['_qty'] = array_sum( $data['_persons'] );
 			}
 		}
 
 		// Duration
-		if ( 'customer' == $this->product->wc_booking_duration_type ) {
+		if ( 'customer' == $this->product->get_duration_type() ) {
 			$booking_duration       = isset( $posted['wc_bookings_field_duration'] ) ? max( 0, absint( $posted['wc_bookings_field_duration'] ) ) : 0;
 			$booking_duration_unit  = $this->product->get_duration_unit();
 
@@ -422,7 +420,7 @@ class WC_Booking_Form {
 			$data['_duration']      = $booking_duration;
 
 			// Get the duration * block duration
-			$total_duration = $booking_duration * $this->product->wc_booking_duration;
+			$total_duration = $booking_duration * $this->product->get_duration();
 
 			// Nice formatted version
 			switch ( $booking_duration_unit ) {
@@ -433,7 +431,8 @@ class WC_Booking_Form {
 					if ( $total_duration % 7 ) {
 						$data['duration'] = $total_duration . ' ' . _n( 'day', 'days', $total_duration, 'woocommerce-bookings' );
 					} else {
-						$data['duration'] = ( $total_duration / 7 ) . ' ' . _n( 'week', 'weeks', $total_duration, 'woocommerce-bookings' );
+						$duration_in_weeks 	= ( $total_duration / 7 );
+						$data['duration'] 	= $duration_in_weeks . ' ' . _n( 'week', 'weeks', $duration_in_weeks, 'woocommerce-bookings' );
 					}
 					break;
 				case 'hour' :
@@ -478,7 +477,7 @@ class WC_Booking_Form {
 				}
 			} else {
 				// Assign an available resource automatically
-				$available_bookings = $this->product->get_available_bookings( $data['_start_date'], $data['_end_date'], 0, $data['_qty'] );
+				$available_bookings = wc_bookings_get_total_available_bookings_for_range( $this->product, $data['_start_date'], $data['_end_date'], 0, $data['_qty'] );
 
 				if ( is_array( $available_bookings ) ) {
 					$data['_resource_id'] = current( array_keys( $available_bookings ) );
@@ -494,7 +493,7 @@ class WC_Booking_Form {
 	 * Checks booking data is correctly set, and that the chosen blocks are indeed available.
 	 *
 	 * @param  array $data
-	 * @return WP_Error on failure, true on success
+	 * @return bool|WP_Error on failure, true on success
 	 */
 	public function is_bookable( $data ) {
 		// Validate resources are set
@@ -514,10 +513,10 @@ class WC_Booking_Form {
 				return new WP_Error( 'Error', __( 'Duration is required - please enter a duration greater than zero above', 'woocommerce-bookings' ) );
 			}
 			if ( $data['_duration'] > $this->product->get_max_duration() ) {
-				return new WP_Error( 'Error', sprintf( __( 'The maximum duration is %d', 'woocommerce-bookings' ), $this->product->wc_booking_max_duration ) );
+				return new WP_Error( 'Error', sprintf( __( 'The maximum duration is %d', 'woocommerce-bookings' ), $this->product->get_max_duration() ) );
 			}
 			if ( $data['_duration'] < $this->product->get_min_duration() ) {
-				return new WP_Error( 'Error', sprintf( __( 'The minimum duration is %d', 'woocommerce-bookings' ), $this->product->wc_booking_min_duration ) );
+				return new WP_Error( 'Error', sprintf( __( 'The minimum duration is %d', 'woocommerce-bookings' ), $this->product->get_min_duration() ) );
 			}
 		}
 
@@ -544,7 +543,7 @@ class WC_Booking_Form {
 			$now = strtotime( 'midnight', current_time( 'timestamp' ) );
 		}
 		if ( $min = $this->product->get_min_date() ) {
-			$min_date = $this->product->get_min_timestamp_for_date( strtotime( $data['date'] ) );
+			$min_date = wc_bookings_get_min_timestamp_for_day( strtotime( $data['_date'] ), $min['value'], $min['unit'] );
 
 			if ( strtotime( $data['_date'] . ' ' . $data['_time'] ) < $min_date ) {
 				return new WP_Error( 'Error', sprintf( __( 'The earliest booking possible is currently %s.', 'woocommerce-bookings' ), date_i18n( wc_date_format() . ' ' . get_option( 'time_format' ), $min_date ) ) );
@@ -565,30 +564,30 @@ class WC_Booking_Form {
 				return new WP_Error( 'Error', __( 'Persons are required - please enter the number of persons above', 'woocommerce-bookings' ) );
 			}
 			if ( $this->product->get_max_persons() && $persons > $this->product->get_max_persons() ) {
-				return new WP_Error( 'Error', sprintf( __( 'The maximum persons per group is %d', 'woocommerce-bookings' ), $this->product->wc_booking_max_persons_group ) );
+				return new WP_Error( 'Error', sprintf( __( 'The maximum persons per group is %d', 'woocommerce-bookings' ), $this->product->get_max_persons() ) );
 			}
 			if ( $persons < $this->product->get_min_persons() ) {
-				return new WP_Error( 'Error', sprintf( __( 'The minimum persons per group is %d', 'woocommerce-bookings' ), $this->product->wc_booking_min_persons_group ) );
+				return new WP_Error( 'Error', sprintf( __( 'The minimum persons per group is %d', 'woocommerce-bookings' ), $this->product->get_min_persons() ) );
 			}
 
 			if ( $this->product->has_person_types() ) {
 				$person_types = $this->product->get_person_types();
 				foreach ( $person_types as $person ) {
-					$person_max = get_post_meta( $person->ID, 'max', true );
-					if ( is_numeric( $person_max ) && isset( $data['_persons'][ $person->ID ] ) && $data['_persons'][ $person->ID ] > $person_max ) {
-						return new WP_Error( 'Error', sprintf( __( 'The maximum %s per group is %d', 'woocommerce-bookings' ), $person->post_title, $person_max ) );
+					$person_max = $person->get_max();
+					if ( is_numeric( $person_max ) && isset( $data['_persons'][ $person->get_id() ] ) && $data['_persons'][ $person->get_id() ] > $person_max ) {
+						return new WP_Error( 'Error', sprintf( __( 'The maximum %1$s per group is %2$d', 'woocommerce-bookings' ), $person->post_title, $person_max ) );
 					}
 
-					$person_min = get_post_meta( $person->ID, 'min', true );
-					if ( is_numeric( $person_min ) && isset( $data['_persons'][ $person->ID ] ) && $data['_persons'][ $person->ID ] < $person_min ) {
-						return new WP_Error( 'Error', sprintf( __( 'The minimum %s per group is %d', 'woocommerce-bookings' ), $person->post_title, $person_min ) );
+					$person_min = $person->get_min();
+					if ( is_numeric( $person_min ) && isset( $data['_persons'][ $person->get_id() ] ) && $data['_persons'][ $person->get_id() ] < $person_min ) {
+						return new WP_Error( 'Error', sprintf( __( 'The minimum %1$s per group is %2$d', 'woocommerce-bookings' ), $person->post_title, $person_min ) );
 					}
 				}
 			}
 		}
 
 		// Get availability for the dates
-		$available_bookings = $this->product->get_available_bookings( $data['_start_date'], $data['_end_date'], $data['_resource_id'], $data['_qty'] );
+		$available_bookings = wc_bookings_get_total_available_bookings_for_range( $this->product, $data['_start_date'], $data['_end_date'], $data['_resource_id'], $data['_qty'] );
 
 		if ( is_array( $available_bookings ) ) {
 			$this->auto_assigned_resource_id = current( array_keys( $available_bookings ) );
@@ -611,11 +610,11 @@ class WC_Booking_Form {
 	public function get_formatted_times( $timestamp ) {
 		return array(
 			'timestamp'   => $timestamp,
-			'year'        => date( 'Y', $timestamp ),
-			'month'       => date( 'n', $timestamp ),
-			'day'         => date( 'j', $timestamp ),
-			'week'        => date( 'W', $timestamp ),
-			'day_of_week' => date( 'N', $timestamp ),
+			'year'        => intval( date( 'Y', $timestamp ) ),
+			'month'       => intval( date( 'n', $timestamp ) ),
+			'day'         => intval( date( 'j', $timestamp ) ),
+			'week'        => intval( date( 'W', $timestamp ) ),
+			'day_of_week' => intval( date( 'N', $timestamp ) ),
 			'time'        => date( 'YmdHi', $timestamp ),
 		);
 	}
@@ -641,8 +640,8 @@ class WC_Booking_Form {
 			return $validate;
 		}
 
-		$base_cost          = max( 0, $this->product->wc_booking_cost );
-		$base_block_cost    = max( 0, $this->product->wc_booking_base_cost );
+		$base_cost          = max( 0, $this->product->get_cost() );
+		$base_block_cost    = max( 0, $this->product->get_base_cost() );
 		$total_block_cost   = 0;
 		$person_block_costs = 0;
 
@@ -662,10 +661,11 @@ class WC_Booking_Form {
 		if ( ! empty( $data['_persons'] ) ) {
 			if ( $this->product->has_person_types() ) {
 				foreach ( $data['_persons'] as $person_id => $person_count ) {
-					$person_cost       = get_post_meta( $person_id, 'cost', true );
-					$person_block_cost = get_post_meta( $person_id, 'block_cost', true );
+					$person_type       = new WC_Product_Booking_Person_Type( $person_id );
+					$person_cost       = $person_type->get_cost();
+					$person_block_cost = $person_type->get_block_cost();
 
-					// Only a single cost - multiplication comes later if wc_booking_person_cost_multiplier is enabled
+					// Only a single cost - multiplication comes later if wc_booking_person_cost_multiplier is enabled.
 					if ( $person_count > 0 ) {
 						if ( $person_cost > 0 ) {
 							$base_cost += ( $person_cost * $person_count );
@@ -688,11 +688,11 @@ class WC_Booking_Form {
 			$blocks_booked = ceil( $blocks_booked / $block_duration );
 		}
 
-		$buffer_period = get_post_meta( $this->product->id, '_wc_booking_buffer_period', true );
+		$buffer_period = $this->product->get_buffer_period();
 		if ( ! empty( $buffer_period ) ) {
 			// handle day buffers
 			if ( ! in_array( $this->product->get_duration_unit(), array( 'minute', 'hour' ) ) ) {
-				$buffer_days = WC_Bookings_Controller::find_buffer_day_blocks( $this->product->id );
+				$buffer_days = WC_Bookings_Controller::find_buffer_day_blocks( $this->product );
 				$contains_buffer_days = false;
 				// Evaluate costs for each booked block
 				for ( $block = 0; $block < $blocks_booked; $block ++ ) {
@@ -767,8 +767,8 @@ class WC_Booking_Form {
 						$to       = $rules['to'];
 					}
 
-					$rule_start_time_hi = date( "YmdHi", strtotime( str_replace( ':', '', $from ), $block_start_time['timestamp'] ) );
-					$rule_end_time_hi   = date( "YmdHi", strtotime( str_replace( ':', '', $to ), $block_start_time['timestamp'] ) );
+					$rule_start_time_hi = date( 'YmdHi', strtotime( str_replace( ':', '', $from ), $block_start_time['timestamp'] ) );
+					$rule_end_time_hi   = date( 'YmdHi', strtotime( str_replace( ':', '', $to ), $block_start_time['timestamp'] ) );
 					$matched            = false;
 
 					// Reverse time rule - The end time is tomorrow e.g. 16:00 today - 12:00 tomorrow
@@ -783,9 +783,8 @@ class WC_Booking_Form {
 						if ( $block_start_time['time'] <= $rule_start_time_hi && $block_end_time['time'] <= $rule_end_time_hi ) {
 							$matched = true;
 						}
-
-					// Normal rule
-					} else {
+					} // Else Normal rule.
+					else {
 						if ( $block_start_time['time'] >= $rule_start_time_hi && $block_end_time['time'] <= $rule_end_time_hi ) {
 							$matched = true;
 						}
@@ -868,11 +867,11 @@ class WC_Booking_Form {
 			$total_block_cost += $over_cost;
 		}
 
-		// Person multiplier mutliplies all costs
+		// Person multiplier multiplies all costs
 		$this->booking_cost = max( 0, $total_block_cost + $base_cost );
 
 		if ( ! empty( $data['_persons'] ) ) {
-			if ( 'yes' === $this->product->wc_booking_person_cost_multiplier ) {
+			if ( $this->product->get_has_person_cost_multiplier() ) {
 				$this->booking_cost = $this->booking_cost * array_sum( $data['_persons'] );
 			}
 		}

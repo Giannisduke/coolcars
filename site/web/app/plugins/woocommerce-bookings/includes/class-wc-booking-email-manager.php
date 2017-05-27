@@ -35,11 +35,7 @@ class WC_Booking_Email_Manager {
 		);
 
 		foreach ( $email_actions as $action ) {
-			if ( version_compare( WC_VERSION, '2.3', '<' ) ) {
-				add_action( $action, array( $GLOBALS['woocommerce'], 'send_transactional_email' ), 10, 10 );
-			} else {
-				add_action( $action, array( 'WC_Emails', 'send_transactional_email' ), 10, 10 );
-			}
+			add_action( $action, array( 'WC_Emails', 'send_transactional_email' ), 10, 10 );
 		}
 
 		add_filter( 'woocommerce_email_attachments', array( $this, 'attach_ics_file' ), 10, 3 );

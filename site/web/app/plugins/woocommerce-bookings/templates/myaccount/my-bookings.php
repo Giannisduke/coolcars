@@ -39,8 +39,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 			<tr>
 				<td class="booking-id"><?php echo esc_html( $booking->get_id() ); ?></td>
 				<td class="booked-product">
-					<?php if ( $booking->get_product() ) : ?>
-					<a href="<?php echo esc_url( get_permalink( $booking->get_product()->id ) ); ?>">
+					<?php if ( $booking->get_product() && $booking->get_product()->is_type( 'booking' ) ) : ?>
+					<a href="<?php echo esc_url( get_permalink( $booking->get_product()->get_id() ) ); ?>">
 						<?php echo esc_html( $booking->get_product()->get_title() ); ?>
 					</a>
 					<?php endif; ?>
@@ -54,7 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 				</td>
 				<td class="booking-start-date"><?php echo esc_html( $booking->get_start_date() ); ?></td>
 				<td class="booking-end-date"><?php echo esc_html( $booking->get_end_date() ); ?></td>
-				<td class="booking-status"><?php echo $booking->get_status( false ); ?></td>
+				<td class="booking-status"><?php echo esc_html( wc_bookings_get_status_label( $booking->get_status() ) ); ?></td>
 				<td class="booking-cancel">
 					<?php if ( $booking->get_status() != 'cancelled' && $booking->get_status() != 'completed' && ! $booking->passed_cancel_day() ) : ?>
 					<a href="<?php echo esc_url( $booking->get_cancel_url() ); ?>" class="button cancel"><?php _e( 'Cancel', 'woocommerce-bookings' ); ?></a>

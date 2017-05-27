@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 echo "= " . $email_heading . " =\n\n";
 
 if ( $booking->get_order() ) {
-	echo sprintf( __( 'Hello %s', 'woocommerce-bookings' ), $booking->get_order()->billing_first_name ) . "\n\n";
+	echo sprintf( __( 'Hello %s', 'woocommerce-bookings' ), ( is_callable( array( $booking->get_order(), 'get_billing_first_name' ) ) ? $booking->get_order()->get_billing_first_name() : $booking->get_order()->billing_first_name ) ) . "\n\n";
 }
 
 echo __(  'Your booking for has been confirmed. The details of your booking are shown below.', 'woocommerce-bookings' ) . "\n\n";
@@ -38,28 +38,34 @@ if ( $booking->has_persons() ) {
 echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 
 if ( $order = $booking->get_order() ) {
-	if ( $order->status == 'pending' ) {
+	if ( 'pending' === $order->get_status() ) {
 		echo sprintf( __( 'To pay for this booking please use the following link: %s', 'woocommerce-bookings' ), $order->get_checkout_payment_url() ) . "\n\n";
 	}
 
 	do_action( 'woocommerce_email_before_order_table', $order, $sent_to_admin, $plain_text );
 
+	$pre_wc_30 = version_compare( WC_VERSION, '3.0', '<' );
+
+	if ( $pre_wc_30 ) {
+		$order_date = $order->order_date;
+	} else {
+		$order_date = $order->get_date_created() ? $order->get_date_created()->date( 'Y-m-d H:i:s' ) : '';
+	}
+
 	echo sprintf( __( 'Order number: %s', 'woocommerce-bookings'), $order->get_order_number() ) . "\n";
-	echo sprintf( __( 'Order date: %s', 'woocommerce-bookings'), date_i18n( wc_date_format(), strtotime( $order->order_date ) ) ) . "\n";
+	echo sprintf( __( 'Order date: %s', 'woocommerce-bookings'), date_i18n( wc_date_format(), strtotime( $order_date ) ) ) . "\n";
 
 	do_action( 'woocommerce_email_order_meta', $order, $sent_to_admin, $plain_text );
 
 	echo "\n";
 
-	switch ( $order->status ) {
+	switch ( $order->get_status() ) {
 		case "completed" :
-			echo $order->email_order_items_table( array( 'show_sku' => false, 'plain_text' => true ) );
+			echo $pre_wc_30 ? $order->email_order_items_table( array( 'show_sku' => false, 'plain_text' => true ) ) : wc_get_email_order_items( $order, array( 'show_sku' => false, 'plain_text' => true ) );
 		break;
 		case "processing" :
-			echo $order->email_order_items_table( array( 'show_sku' => true, 'plain_text' => true ) );
-		break;
 		default :
-			echo $order->email_order_items_table( array( 'show_sku' => true, 'plain_text' => true ) );
+			echo $pre_wc_30 ? $order->email_order_items_table( array( 'show_sku' => true, 'plain_text' => true ) ) : wc_get_email_order_items( $order, array( 'show_sku' => true, 'plain_text' => true ) );
 		break;
 	}
 

@@ -13,10 +13,24 @@ if ( wc_booking_order_requires_confirmation( $booking->get_order() ) && $booking
 }
 ?>
 
-<?php do_action( 'woocommerce_email_header', $email_heading ); ?>
+<?php do_action( 'woocommerce_email_header', $email_heading );
 
-<?php if ( $booking->get_order() && $booking->get_order()->billing_first_name && $booking->get_order()->billing_last_name ) : ?>
-	<p><?php printf( $opening_paragraph, $booking->get_order()->billing_first_name . ' ' . $booking->get_order()->billing_last_name ); ?></p>
+$order = $booking->get_order();
+
+if ( $order ) {
+	if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+		$first_name = $order->billing_first_name;
+		$last_name = $order->billing_last_name;
+	} else {
+		$first_name = $order->get_billing_first_name();
+		$last_name = $order->get_billing_last_name();
+	}
+}
+
+?>
+
+<?php if ( ! empty( $first_name ) && ! empty( $last_name ) ) : ?>
+	<p><?php printf( $opening_paragraph, $first_name . ' ' . $last_name ); ?></p>
 <?php endif; ?>
 
 <table cellspacing="0" cellpadding="6" style="width: 100%; border: 1px solid #eee;" border="1" bordercolor="#eee">

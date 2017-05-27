@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly ?>
 <?php do_action( 'woocommerce_email_header', $email_heading ); ?>
 
 <?php if ( $booking->get_order() ) : ?>
-	<p><?php printf( __( 'Hello %s', 'woocommerce-bookings' ), $booking->get_order()->billing_first_name ); ?></p>
+	<p><?php printf( __( 'Hello %s', 'woocommerce-bookings' ), ( is_callable( array( $booking->get_order(), 'get_billing_first_name' ) ) ? $booking->get_order()->get_billing_first_name() : $booking->get_order()->billing_first_name ) ); ?></p>
 <?php endif; ?>
 
 <p><?php _e( 'This is a reminder that your booking will take place tomorrow.', 'woocommerce-bookings' ); ?></p>

@@ -14,7 +14,7 @@ abstract class WC_Booking_Form_Picker {
 	 */
 	protected function get_field_label( $text ) {
 		// If the duration is > 1, dates and times are 'start' times and should thus have different labels
-		if ( $this->booking_form->product->wc_booking_duration_type == 'customer' && $this->booking_form->product->wc_booking_max_duration > 1 && ! in_array( $this->booking_form->product->wc_booking_duration_unit, array( 'hour', 'minute' ) ) ) {
+		if ( $this->booking_form->product->get_duration_type() === 'customer' && $this->booking_form->product->get_max_duration() > 1 && ! in_array( $this->booking_form->product->get_duration_unit(), array( 'hour', 'minute' ) ) ) {
 			$date_label = __( 'Start %s', 'woocommerce-bookings' );
 		} else {
 			$date_label = '%s';
@@ -36,9 +36,17 @@ abstract class WC_Booking_Form_Picker {
 			if ( in_array( $unit, array( 'd', 'w', 'y', 'm' ) ) ) {
 				$js_string = "+{$min_date['value']}{$unit}";
 			} elseif ( 'h' === $unit ) {
-				$current_d = date( 'd', current_time( 'timestamp' ) );
-				$min_d     = date( 'd', strtotime( "+{$min_date['value']} hour", current_time( 'timestamp' ) ) );
-				$js_string = "+" . ( $current_d == $min_d ? 0 : 1 ) . "d";
+
+				// if less than 24 hours are entered, we determine if the time falls in today or tomorrow.
+				// if more than 24 hours are entered, we determine how many days should be marked off
+				if ( 24 > $min_date['value'] ) {
+					$current_d = date( 'd', current_time( 'timestamp' ) );
+					$min_d     = date( 'd', strtotime( "+{$min_date['value']} hour", current_time( 'timestamp' ) ) );
+					$js_string = '+' . ( $current_d == $min_d ? 0 : 1 ) . 'd';
+				} else {
+					$min_d = (int) ( $min_date['value'] / 24 );
+					$js_string = '+' . $min_d . 'd';
+				}
 			}
 		}
 		return $js_string;
@@ -58,7 +66,7 @@ abstract class WC_Booking_Form_Picker {
 		} elseif ( 'h' === $unit ) {
 			$current_d = date( 'd', current_time( 'timestamp' ) );
 			$max_d     = date( 'd', strtotime( "+{$max_date['value']}{$unit}", current_time( 'timestamp' ) ) );
-			$js_string = "+" . ( $current_d == $max_d ? 0 : 1 ) . "d";
+			$js_string = '+' . ( $current_d == $max_d ? 0 : 1 ) . 'd';
 		}
 		return $js_string;
 	}

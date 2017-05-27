@@ -2,12 +2,27 @@
 
 	<div class="options_group" id="resource_options">
 
-		<?php woocommerce_wp_text_input( array( 'id' => '_wc_booking_resouce_label', 'placeholder' => __( 'Type', 'woocommerce-bookings' ), 'label' => __( 'Label', 'woocommerce-bookings' ), 'desc_tip' => true, 'description' => __( 'The label shown on the frontend if the resource is customer defined.', 'woocommerce-bookings' ) ) ); ?>
+		<?php woocommerce_wp_text_input( array(
+			'id'          => '_wc_booking_resource_label',
+			'placeholder' => __( 'Type', 'woocommerce-bookings' ),
+			'label'       => __( 'Label', 'woocommerce-bookings' ),
+			'value'       => $bookable_product->get_resource_label( 'edit' ),
+			'desc_tip'    => true,
+			'description' => __( 'The label shown on the frontend if the resource is customer defined.', 'woocommerce-bookings' ),
+		) ); ?>
 
-		<?php woocommerce_wp_select( array( 'id' => '_wc_booking_resources_assignment', 'label' => __( 'Resources are...', 'woocommerce-bookings' ), 'description' => '', 'desc_tip' => true, 'value' => get_post_meta( $post_id, '_wc_booking_resources_assignment', true ), 'options' => array(
-			'customer' 	  => __( 'Customer selected', 'woocommerce-bookings' ),
-			'automatic'   => __( 'Automatically assigned', 'woocommerce-bookings' ),
-		), 'description' => __( 'Customer selected resources allow customers to choose one from the booking form.', 'woocommerce-bookings' ) ) ); ?>
+		<?php woocommerce_wp_select( array(
+			'id'            => '_wc_booking_resources_assignment',
+			'label'         => __( 'Resources are...', 'woocommerce-bookings' ),
+			'description'   => '',
+			'desc_tip'      => true,
+			'value'         => $bookable_product->get_resources_assignment( 'edit' ),
+			'options'       => array(
+				'customer'  => __( 'Customer selected', 'woocommerce-bookings' ),
+				'automatic' => __( 'Automatically assigned', 'woocommerce-bookings' ),
+			),
+			'description'   => __( 'Customer selected resources allow customers to choose one from the booking form.', 'woocommerce-bookings' ),
+		) ); ?>
 
 	</div>
 
@@ -27,22 +42,19 @@
 			<?php
 			global $post, $wpdb;
 
-			$all_resources = self::get_booking_resources();
-
-			$product_resources = $wpdb->get_col( $wpdb->prepare( "SELECT resource_id FROM {$wpdb->prefix}wc_booking_relationships WHERE product_id = %d ORDER BY sort_order;", $post->ID ) );
-			$loop              = 0;
+			$all_resources        = self::get_booking_resources();
+			$product_resources    = $bookable_product->get_resource_ids( 'edit' );
+			$resource_base_costs  = $bookable_product->get_resource_base_costs( 'edit' );
+			$resource_block_costs = $bookable_product->get_resource_block_costs( 'edit' );
+			$loop                 = 0;
 
 			if ( $product_resources ) {
-				$resource_base_costs  = get_post_meta( $post_id, '_resource_base_costs', true );
-				$resource_block_costs = get_post_meta( $post_id, '_resource_block_costs', true );
-
 				foreach ( $product_resources as $resource_id ) {
-					$resource            = get_post( $resource_id );
+					$resource            = new WC_Product_Booking_Resource( $resource_id );
 					$resource_base_cost  = isset( $resource_base_costs[ $resource_id ] ) ? $resource_base_costs[ $resource_id ] : '';
 					$resource_block_cost = isset( $resource_block_costs[ $resource_id ] ) ? $resource_block_costs[ $resource_id ] : '';
-					
+
 					include( 'html-booking-resource.php' );
-					
 					$loop++;
 				}
 			}
@@ -55,10 +67,10 @@
 				<option value=""><?php _e( 'New resource', 'woocommerce-bookings' ); ?></option>
 				<?php
 					if ( $all_resources ) {
-				    	foreach ( $all_resources as $resource ) {
-				    		echo '<option value="' . esc_attr( $resource->ID ) . '">#' . $resource->ID . ' - ' . esc_html( $resource->post_title ) . '</option>';
-				    	}
-				    }
+						foreach ( $all_resources as $resource ) {
+							echo '<option value="' . esc_attr( $resource->ID ) . '">#' . absint( $resource->ID ) . ' - ' . esc_html( $resource->post_title ) . '</option>';
+						}
+					}
 				?>
 			</select>
 			<a href="<?php echo admin_url( 'edit.php?post_type=bookable_resource' ); ?>" target="_blank"><?php _e( 'Manage Resources', 'woocommerce-bookings' ); ?></a>

@@ -16,7 +16,7 @@ class WC_Booking_Cart_Manager {
 	public $id;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_booking_add_to_cart', array( $this, 'add_to_cart' ), 30 );
@@ -27,17 +27,19 @@ class WC_Booking_Cart_Manager {
 		add_filter( 'woocommerce_get_item_data', array( $this, 'get_item_data' ), 10, 2 );
 		add_filter( 'woocommerce_add_cart_item_data', array( $this, 'add_cart_item_data' ), 10, 2 );
 		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_add_cart_item' ), 10, 3 );
-		add_action( 'woocommerce_add_order_item_meta', array( $this, 'order_item_meta' ), 50, 2 );
+
+		if ( version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+			add_action( 'woocommerce_new_order_item', array( $this, 'order_item_meta' ), 50, 2 );
+		} else {
+			add_action( 'woocommerce_add_order_item_meta', array( $this, 'order_item_meta' ), 50, 2 );
+		}
+
 		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_booking_requires_confirmation' ), 20, 2 );
 		add_action( 'woocommerce_cart_item_removed', array( $this, 'cart_item_removed' ), 20 );
 		add_action( 'woocommerce_cart_item_restored', array( $this, 'cart_item_restored' ), 20 );
 
 		if ( get_option( 'woocommerce_cart_redirect_after_add' ) === 'yes' ) {
-			if ( version_compare( WC_VERSION, '2.3', '<' ) ) {
-				add_filter( 'add_to_cart_redirect', array( $this, 'add_to_cart_redirect' ) );
-			} else {
-				add_filter( 'woocommerce_add_to_cart_redirect', array( $this, 'add_to_cart_redirect' ) );
-			}
+			add_filter( 'woocommerce_add_to_cart_redirect', array( $this, 'add_to_cart_redirect' ) );
 		}
 
 		$this->id = 'wc_booking_cart_manager';
@@ -153,7 +155,7 @@ class WC_Booking_Cart_Manager {
 
 				if ( isset( $this->log ) ) {
 
-					$message = sprintf( 'Booking ID: %s removed from cart by user ID: %s ', $booking->id, get_current_user_id() );
+					$message = sprintf( 'Booking ID: %s removed from cart by user ID: %s ', $booking->get_id(), get_current_user_id() );
 					$this->log->add( $this->id, $message );
 
 				}
@@ -182,7 +184,7 @@ class WC_Booking_Cart_Manager {
 
 				if ( isset( $this->log ) ) {
 
-					$message = sprintf( 'Booking ID: %s was restored to cart by user ID: %s ', $booking->id, get_current_user_id() );
+					$message = sprintf( 'Booking ID: %s was restored to cart by user ID: %s ', $booking->get_id(), get_current_user_id() );
 					$this->log->add( $this->id, $message );
 
 				}
@@ -194,12 +196,12 @@ class WC_Booking_Cart_Manager {
 	 * Schedule booking to be deleted if inactive
 	 */
 	public function schedule_cart_removal( $booking_id ) {
-		
+
 		$minutes = apply_filters( 'woocommerce_bookings_remove_inactive_cart_time', 60 );
 
 		/**
 		 * If this has been emptied, or set to 0, it will just exit. This means that in-cart bookings will need to be manually removed.
-		 * Also take note that if the $minutes var is set to 5 or less, this means that it is possible for the in-cart booking to be 
+		 * Also take note that if the $minutes var is set to 5 or less, this means that it is possible for the in-cart booking to be
 		 * removed before the customer is able to check out.
 		 */
 		if ( empty( $minutes ) ) {
@@ -254,10 +256,10 @@ class WC_Booking_Cart_Manager {
 		$new_booking = $this->create_booking_from_cart_data( $cart_item_meta, $product_id );
 
 		// Store in cart
-		$cart_item_meta['booking']['_booking_id'] = $new_booking->id;
+		$cart_item_meta['booking']['_booking_id'] = $new_booking->get_id();
 
-		// Schedule this item to be removed from the cart if the user is inactive
-		$this->schedule_cart_removal( $new_booking->id );
+		// Schedule this item to be removed from the cart if the user is inactive.
+		$this->schedule_cart_removal( $new_booking->get_id() );
 
 		return $cart_item_meta;
 	}
@@ -269,7 +271,7 @@ class WC_Booking_Cart_Manager {
 	 * @param        $product_id
 	 * @param string $status
 	 *
-	 * @return object
+	 * @return WC_Booking
 	 */
 	private function create_booking_from_cart_data( $cart_item_meta, $product_id, $status = 'in-cart' ) {
 		// Create the new booking
@@ -320,39 +322,46 @@ class WC_Booking_Cart_Manager {
 	}
 
 	/**
-	 * order_item_meta function.
+	 * order_item_meta function
 	 *
 	 * @param mixed $item_id
 	 * @param mixed $values
 	 */
 	public function order_item_meta( $item_id, $values ) {
-		global $wpdb;
 
 		if ( ! empty( $values['booking'] ) ) {
 			$product        = $values['data'];
 			$booking_id     = $values['booking']['_booking_id'];
+		}
+
+		if ( ! isset( $booking_id ) && ! empty( $values->legacy_values['booking'] ) ) {
+			$product        = $values->legacy_values['data'];
+			$booking_id     = $values->legacy_values['booking']['_booking_id'];
+		}
+
+		if ( isset( $booking_id ) ) {
 			$booking        = get_wc_booking( $booking_id );
 			$booking_status = 'unpaid';
-			$order_id       = $wpdb->get_var( $wpdb->prepare( "SELECT order_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = %d", $item_id ) );
 
+			if ( function_exists( 'wc_get_order_id_by_order_item_id' ) ) {
+				$order_id = wc_get_order_id_by_order_item_id( $item_id );
+			} else {
+				global $wpdb;
+				$order_id = (int) $wpdb->get_var( $wpdb->prepare(
+					"SELECT order_id FROM {$wpdb->prefix}woocommerce_order_items WHERE order_item_id = %d",
+					$item_id
+				) );
+			}
+			
 			// Set as pending when the booking requires confirmation
 			if ( wc_booking_requires_confirmation( $values['product_id'] ) ) {
 				$booking_status = 'pending-confirmation';
 			}
 
-			$booking->set_order_id( $order_id, $item_id );
-
-			// Add summary of details to line item
-			foreach ( $values['booking'] as $key => $value ) {
-				if ( strpos( $key, '_' ) !== 0 ) {
-					wc_add_order_item_meta( $item_id, get_wc_booking_data_label( $key, $product ), $value );
-				}
-			}
-
-			wc_add_order_item_meta( $item_id, __( 'Booking ID', 'woocommerce-bookings' ), $values['booking']['_booking_id'] );
-
-			// Update status
-			$booking->update_status( $booking_status );
+			$booking->set_order_id( $order_id );
+			$booking->set_order_item_id( $item_id );
+			$booking->set_status( $booking_status );
+			$booking->save();
 		}
 	}
 

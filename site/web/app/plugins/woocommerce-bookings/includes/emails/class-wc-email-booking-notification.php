@@ -45,30 +45,52 @@ class WC_Email_Booking_Notification extends WC_Email {
 	public function trigger( $booking_id, $notification_subject, $notification_message, $attachments = array() ) {
 		if ( $booking_id ) {
 			$this->object    = get_wc_booking( $booking_id );
-			$this->find[]    = '{product_title}';
-			$this->replace[] = $this->object->get_product()->get_title();
 
 			if ( ! is_object( $this->object ) || ! $this->object->get_order() ) {
 				return;
 			}
 
+			foreach ( array( '{product_title}', '{order_date}', '{order_number}', '{customer_name}', '{customer_first_name}', '{customer_last_name}' ) as $key ) {
+				$key = array_search( $key, $this->find );
+				if ( false !== $key ) {
+					unset( $this->find[ $key ] );
+					unset( $this->replace[ $key ] );
+				}
+			}
+
+			$this->find[]    = '{product_title}';
+			$this->replace[] = $this->object->get_product()->get_title();
+
+
 			if ( $this->object->get_order() ) {
+				if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+					$billing_first_name = $this->object->get_order()->billing_first_name;
+					$billing_last_name = $this->object->get_order()->billing_last_name;
+					$billing_email = $this->object->get_order()->billing_email;
+					$order_date = $this->object->get_order()->order_date;
+				} else {
+					$billing_first_name = $this->object->get_order()->get_billing_first_name();
+					$billing_last_name = $this->object->get_order()->get_billing_last_name();
+					$billing_email = $this->object->get_order()->get_billing_email();
+					$order_date = $this->object->get_order()->get_date_created() ? $this->object->get_order()->get_date_created()->date( 'Y-m-d H:i:s' ) : '';
+				}
+
 				$this->find[]    = '{order_date}';
-				$this->replace[] = date_i18n( wc_date_format(), strtotime( $this->object->get_order()->order_date ) );
+				$this->replace[] = date_i18n( wc_date_format(), strtotime( $order_date ) );
 
 				$this->find[]    = '{order_number}';
 				$this->replace[] = $this->object->get_order()->get_order_number();
 
 				$this->find[]    = '{customer_name}';
-				$this->replace[] = $this->object->get_order()->billing_first_name . ' ' . $this->object->get_order()->billing_last_name;
+				$this->replace[] = $billing_first_name . ' ' . $billing_last_name;
 
 				$this->find[]    = '{customer_first_name}';
-				$this->replace[] = $this->object->get_order()->billing_first_name;
+				$this->replace[] = $billing_first_name;
 
 				$this->find[]    = '{customer_last_name}';
-				$this->replace[] = $this->object->get_order()->billing_last_name;
+				$this->replace[] = $billing_last_name;
 
-				$this->recipient = $this->object->get_order()->billing_email;
+				$this->recipient = $billing_email;
 			} else {
 				$this->find[]    = '{order_date}';
 				$this->replace[] = date_i18n( wc_date_format(), strtotime( $this->object->booking_date ) );

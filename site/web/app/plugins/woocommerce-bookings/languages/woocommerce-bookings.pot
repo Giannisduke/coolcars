@@ -2,9 +2,9 @@
 # This file is distributed under the GNU General Public License v3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Bookings 1.9.13\n"
+"Project-Id-Version: WooCommerce Bookings 1.9.14\n"
 "Report-Msgid-Bugs-To: https://support.woothemes.com/hc/\n"
-"POT-Creation-Date: 2016-11-29 21:52:59+00:00\n"
+"POT-Creation-Date: 2016-12-14 13:05:35+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -931,7 +931,9 @@ msgid "Customer defined blocks of"
 msgstr ""
 
 #: includes/admin/views/html-booking-data.php:19
-msgid "Minutes(s)"
+#: includes/admin/views/html-booking-data.php:100
+#: includes/booking-form/class-wc-booking-form.php:167
+msgid "Minute(s)"
 msgstr ""
 
 #: includes/admin/views/html-booking-data.php:28
@@ -998,11 +1000,6 @@ msgstr ""
 
 #: includes/admin/views/html-booking-data.php:94
 msgid "Booking can be cancelled until"
-msgstr ""
-
-#: includes/admin/views/html-booking-data.php:100
-#: includes/booking-form/class-wc-booking-form.php:167
-msgid "Minute(s)"
 msgstr ""
 
 #: includes/admin/views/html-booking-data.php:102
@@ -1078,7 +1075,7 @@ msgstr ""
 #: includes/admin/views/html-booking-persons.php:17
 msgid ""
 "Enable this to count each person as a booking until the max bookings per "
-"block (above) is reached."
+"block (in availability) is reached."
 msgstr ""
 
 #: includes/admin/views/html-booking-persons.php:19
@@ -1672,20 +1669,20 @@ msgstr ""
 msgid "This block cannot be booked."
 msgstr ""
 
-#: includes/class-wc-product-booking.php:602
+#: includes/class-wc-product-booking.php:600
 msgid "There is %d place remaining"
 msgid_plural "There are %d places remaining"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-wc-product-booking.php:607
-#: includes/class-wc-product-booking.php:613
+#: includes/class-wc-product-booking.php:605
+#: includes/class-wc-product-booking.php:611
 msgid "There is %1$d place remaining on %2$s"
 msgid_plural "There are %1$d places remaining on %2$s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-wc-product-booking.php:1507
+#: includes/class-wc-product-booking.php:1518
 msgid "%d left"
 msgid_plural "%d left"
 msgstr[0] ""

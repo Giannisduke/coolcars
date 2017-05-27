@@ -1,3 +1,6 @@
+// Import WooCommerce mixins
+@import url('mixins.less');
+
 .wc-bookings-booking-form {
 	border: 1px solid #ddd;
 	padding: 1em 1em 0;
@@ -280,6 +283,68 @@
 		td.bookable-range .ui-state-default {
 			background: #239e57 !important;
 			color: #fff;
+		}
+	}
+}
+
+.wc-booking-summary {
+	margin: 1em 1em 1em 0;
+	border: 2px solid #ddd;
+	padding: 1em;
+	color: #888;
+	border-radius: 4px;
+
+	.wc-booking-summary-actions {
+		margin: 1em 0 0 0;
+		a {
+			border-right: 1px solid #ddd;
+			margin: 0 3px 0 0;
+			padding: 0 4px 0 0;
+		}
+		a:last-child {
+			border-right: 0;
+			margin: 0;
+			padding: 0;
+		}
+	}
+	.wc-booking-summary-number {
+		line-height: 1em;
+		span {
+			color: #fff;
+			font-size: 0.8em;
+			background-color: #ccc;
+			padding: .4em .8em;
+			border-radius: 4px;
+			margin-left: 1em;
+			margin-top: -.2em;
+			float: right;
+		}
+		.status-unpaid,
+		.status-incart {
+			background-color: #ccc;
+		}
+		.status-pending,
+		.status-pending-confirmation {
+			background-color: @orange;
+		}
+		.status-confirmed {
+			background-color: @green;
+		}
+		.status-paid {
+			background-color: @blue;
+		}
+		.status-cancelled {
+			background-color: @red;
+		}
+		.status-complete {
+			background-color: @grey;
+		}
+	}
+	.wc-booking-summary-list {
+		margin: 1em 0 0 0;
+		list-style: none outside;
+		li {
+			margin: 0 0 .5em;
 		}
 	}
 }

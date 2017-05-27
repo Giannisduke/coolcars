@@ -1,10 +1,6 @@
 <?php
-/**
- * Admin functions for the bookings post type
- */
-
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit;
 }
 
 if ( class_exists( 'WC_Bookable_Resource_CPT' ) ) {
@@ -12,31 +8,26 @@ if ( class_exists( 'WC_Bookable_Resource_CPT' ) ) {
 }
 
 /**
- * WC_Admin_CPT_Product Class
+ * WC_Admin_CPT_Product Class.
  */
 class WC_Bookable_Resource_CPT {
-		/**
-	    * @var string
-	 */
-	public $type;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	public function __construct() {
-		$this->type = 'bookable_resource';
-
 		// Post title fields
 		add_filter( 'enter_title_here', array( $this, 'enter_title_here' ), 1, 2 );
 
 		// Admin Columns
-		add_filter( 'manage_edit-' . $this->type . '_columns', array( $this, 'edit_columns' ) );
-		add_action( 'manage_' . $this->type . '_posts_custom_column', array( $this, 'custom_columns' ), 2 );
-		add_filter( 'manage_edit-' . $this->type . '_sortable_columns', array( $this, 'custom_columns_sort' ) );
+		add_filter( 'manage_edit-bookable_resource_columns', array( $this, 'edit_columns' ) );
+		add_action( 'manage_bookable_resource_posts_custom_column', array( $this, 'custom_columns' ), 2 );
+		add_filter( 'manage_edit-bookable_resource_sortable_columns', array( $this, 'custom_columns_sort' ) );
 	}
 
 	/**
 	 * Change title boxes in admin.
+	 *
 	 * @param  string $text
 	 * @param  object $post
 	 * @return string
@@ -67,7 +58,7 @@ class WC_Bookable_Resource_CPT {
 	}
 
 	/**
-	 * Make product columns sortable
+	 * Make product columns sortable.
 	 *
 	 * https://gist.github.com/906872
 	 *
@@ -84,6 +75,7 @@ class WC_Bookable_Resource_CPT {
 
 	/**
 	 * Define our custom columns shown in admin.
+	 *
 	 * @param  string $column
 	 */
 	public function custom_columns( $column ) {
@@ -91,7 +83,7 @@ class WC_Bookable_Resource_CPT {
 
 		switch ( $column ) {
 			case 'resource_name' :
-				printf( '<a href="%s">%s</a>', admin_url( 'post.php?post=' . $post->ID . '&action=edit' ), $post->post_title );
+				printf( '<a href="%s">%s</a>', admin_url( 'post.php?post=' . absint( $post->ID ) . '&action=edit' ), $post->post_title );
 			break;
 			case 'parents' :
 				$parents      = $wpdb->get_col( $wpdb->prepare( "SELECT product_id FROM {$wpdb->prefix}wc_booking_relationships WHERE resource_id = %d ORDER BY sort_order;", $post->ID ) );

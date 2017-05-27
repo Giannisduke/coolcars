@@ -158,6 +158,21 @@ jQuery(document).ready(function($) {
 		},
 		stop:function(event,ui){
 			ui.item.removeAttr('style');
+
+			// loop through each of the rows
+			jQuery( event.target).find( 'tr' ).each( function ( rowIndex, item ) {
+
+				// update all the form field indexes in the current moved tr
+				var fields = jQuery(item).find( '[name*="wc_booking"]' );
+				for ( var i=0 ; i < fields.length ; i++  ) {
+					var field = fields[ i ];
+					var oldName = jQuery( field ).attr( 'name' );
+					var newName = oldName.replace( /[\d+]/g, rowIndex);
+					if( newName !== oldName ){
+						jQuery( field ).attr( 'name', newName );
+					}
+				}
+			});
 		}
 	});
 
@@ -170,8 +185,11 @@ jQuery(document).ready(function($) {
 		buttonImageOnly: true
 	});
 
-	$( '.add_row' ).click(function(){
-		$(this).closest('table').find('tbody').append( $( this ).data( 'row' ) );
+	$( '.add_row' ).click(function( e ){
+		var newRowIndex = $(e.target).closest('table').find( '#pricing_rows tr' ).length;
+		var newRow = $( this ).data( 'row' );
+		newRow = newRow.replace( /bookings_cost_js_index_replace/ig, newRowIndex.toString() );
+		$(this).closest('table').find('tbody').append( newRow);
 		$('body').trigger('row_added');
 		return false;
 	});

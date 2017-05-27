@@ -93,10 +93,12 @@ th.column-booking_status {
 				.icon;
 				font-size: 1.4em;
 			}
-			&.status-unpaid:before, &.status-incart:before {
+			&.status-unpaid:before,
+			&.status-incart:before {
 				content: "\e033";
 			}
-			&.status-pending:before {
+			&.status-pending:before,
+			&.status-pending-confirmation:before {
 				content: "\e012";
 				color: @orange;
 			}
@@ -141,12 +143,37 @@ th.column-booking_status {
 	}
 }
 
+#woocommerce-booking-save {
+	input {
+		float: right;
+	}
+	#delete-action {
+		line-height: 25px;
+		vertical-align: middle;
+		text-align: left;
+		float: left;
+		a {
+			color: #a00;
+		}
+	}
+	.inside {
+		margin: 0;
+		padding: 10px;
+		overflow: hidden;
+	}
+}
 #woocommerce-booking-data {
 	h2.hndle, h3.hndle, .handlediv {
 		display: none;
 	}
 	.inside {
 		display: block !important;
+		padding: 0;
+		margin: 0;
+
+		.select2-container {
+			width: 100% !important;
+		}
 	}
 }
 #woocommerce-bookable-resource-data {
@@ -235,6 +262,10 @@ th.column-booking_status {
 				display: block;
 				padding: 0 0 3px;
 			}
+			input[type="number"], input[type="text"] {
+				padding: 6px;
+				height: auto;
+			}
 			input[type="text"], textarea {
 				width: 100%;
 			}
@@ -265,7 +296,7 @@ th.column-booking_status {
 			}
 			&.form-field-wide {
 				input[type="text"] {
-					width: auto;
+					width: 100%;
 				}
 			}
 			&.booking-person {
@@ -729,4 +760,67 @@ th.column-booking_status {
 .woocommerce_options_panel .add_row + .description {
 	display: block;
 	margin: 7px 0 0;
+}
+
+.wc-booking-summary {
+	margin: 1em 0 0;
+	border: 2px solid #d7cad2;
+	padding: 1.5em;
+	color: #888;
+	background: #F7F5F6;
+	border-radius: 4px;
+
+	.wc-booking-summary-actions {
+		margin: 1em 0 0 0;
+		a {
+			border-right: 1px solid #ddd;
+			margin: 0 3px 0 0;
+			padding: 0 4px 0 0;
+		}
+		a:last-child {
+			border-right: 0;
+			margin: 0;
+			padding: 0;
+		}
+	}
+	.wc-booking-summary-number {
+		line-height: 1em;
+		span {
+			color: #fff;
+			font-size: 0.8em;
+			background-color: #ccc;
+			padding: .4em .8em;
+			border-radius: 4px;
+			margin-left: 1em;
+			margin-top: -.2em;
+			float: right;
+		}
+		.status-unpaid,
+		.status-incart {
+			background-color: #ccc;
+		}
+		.status-pending,
+		.status-pending-confirmation {
+			background-color: @orange;
+		}
+		.status-confirmed {
+			background-color: @green;
+		}
+		.status-paid {
+			background-color: @blue;
+		}
+		.status-cancelled {
+			background-color: @red;
+		}
+		.status-complete {
+			background-color: @grey;
+		}
+	}
+	.wc-booking-summary-list {
+		margin: 1em 0 0 0;
+		list-style: none outside;
+		li {
+			margin: 0 0 .5em;
+		}
+	}
 }

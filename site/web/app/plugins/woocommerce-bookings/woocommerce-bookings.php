@@ -1,19 +1,18 @@
 <?php
-/*
-Plugin Name: WooCommerce Bookings
-Plugin URI: https://woocommerce.com/products/woocommerce-bookings/
-Description: Setup bookable products such as for reservations, services and hires.
-Version: 1.9.14
-Author: Automattic
-Author URI: https://woocommerce.com
-Text Domain: woocommerce-bookings
-Domain Path: /languages
-
-Copyright: © 2009-2013 Automattic.
-License: GNU General Public License v3.0
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
-*/
-
+ /**
+  * Plugin Name: WooCommerce Bookings
+  * Plugin URI: https://woocommerce.com/products/woocommerce-bookings/
+  * Description: Setup bookable products such as for reservations, services and hires.
+  * Version: 1.10.1
+  * Author: Automattic
+  * Author URI: https://woocommerce.com
+  * Text Domain: woocommerce-bookings
+  * Domain Path: /languages
+  *
+  * Copyright: © 2009-2013 Automattic.
+  * License: GNU General Public License v3.0
+  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -28,7 +27,7 @@ if ( ! function_exists( 'woothemes_queue_update' ) ) {
 /**
  * Plugin updates
  */
-//woothemes_queue_update( plugin_basename( __FILE__ ), '911c438934af094c2b38d5560b9f50f3', '390890' );
+woothemes_queue_update( plugin_basename( __FILE__ ), '911c438934af094c2b38d5560b9f50f3', '390890' );
 
 if ( ! is_woocommerce_active() ) {
 	return;
@@ -43,17 +42,19 @@ class WC_Bookings {
 	 * Constructor
 	 */
 	public function __construct() {
-		define( 'WC_BOOKINGS_VERSION', '1.9.14' );
+		define( 'WC_BOOKINGS_VERSION', '1.10.1' );
 		define( 'WC_BOOKINGS_TEMPLATE_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/templates/' );
 		define( 'WC_BOOKINGS_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'WC_BOOKINGS_MAIN_FILE', __FILE__ );
+		define( 'WC_BOOKINGS_ABSPATH', dirname( __FILE__ ) . '/' );
 
 		add_action( 'init', array( $this, 'load_plugin_textdomain' ) );
-		add_action( 'woocommerce_loaded', array( $this, 'includes' ) );
+		add_action( 'plugins_loaded', array( $this, 'includes' ) );
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 		add_action( 'init', array( $this, 'init_post_types' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'booking_form_styles' ) );
 		add_filter( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
+		add_filter( 'woocommerce_data_stores', array( $this, 'register_data_stores' ) );
 
 		if ( is_admin() ) {
 			$this->admin_includes();
@@ -207,29 +208,61 @@ KEY resource_id (resource_id)
 	}
 
 	/**
-	 * Load Classes
+	 * Load Classes.
 	 */
 	public function includes() {
-		include( 'includes/wc-bookings-functions.php' );
-		include( 'includes/class-wc-booking-form-handler.php' );
-		include( 'includes/class-wc-booking-order-manager.php' );
-		include( 'includes/class-wc-booking.php' );
-		include( 'includes/class-wc-bookings-controller.php' );
-		include( 'includes/class-wc-booking-cron-manager.php' );
-		include( 'includes/class-wc-bookings-ics-exporter.php' );
-		include( 'includes/gateways/class-wc-bookings-gateway.php' );
-		include( 'includes/integrations/class-wc-bookings-google-calendar-integration.php' );
-		include( 'includes/booking-form/class-wc-booking-form.php' );
-		include( 'includes/class-wc-booking-coupon.php' );
+		/**
+		 * Load 3.0.x classes and backwards compatibility code when using older versions of WooCommerce.
+		 *
+		 * @since 1.10.0
+		 * @todo  remove this when 2.6.x support is dropped.
+		 */
+		if ( version_compare( WC_VERSION, '3.0', '<' ) ) {
+			if ( ! class_exists( 'WC_Data_Store' ) ) {
+				include_once( WC_BOOKINGS_ABSPATH . 'includes/compatibility/class-wc-data-store.php' );
+			}
+			if ( ! class_exists( 'WC_Data_Exception' ) ) {
+				include_once( WC_BOOKINGS_ABSPATH . 'includes/compatibility/class-wc-data-exception.php' );
+			}
+			if ( ! class_exists( 'WC_Data_Store_WP' ) ) {
+				include_once( WC_BOOKINGS_ABSPATH . 'includes/compatibility/class-wc-data-store-wp.php' );
+			}
+			if ( ! class_exists( 'WC_Product_Data_Store_CPT' ) ) {
+				include_once( WC_BOOKINGS_ABSPATH . 'includes/compatibility/class-wc-product-data-store-cpt.php' );
+			}
+		}
 
-		// Products
-		include( 'includes/class-wc-product-booking.php' );
-		include( 'includes/class-wc-product-class-loader.php' );
-		include( 'includes/class-wc-product-booking-resource.php' );
-		include( 'includes/class-wc-product-booking-rule-manager.php' );
+		if ( ! class_exists( 'WC_Bookings_Data' ) ) {
+			include_once( WC_BOOKINGS_ABSPATH . 'includes/compatibility/abstract-wc-bookings-data.php' ); // Bookings version of WC_Data.
+		}
+
+		// Objects.
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-objects/class-wc-product-booking.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-objects/class-wc-product-booking-resource.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-objects/class-wc-product-booking-person-type.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-objects/class-wc-booking.php' );
+
+		// Stores.
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-stores/class-wc-booking-data-store.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-stores/class-wc-product-booking-data-store-cpt.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-stores/class-wc-product-booking-resource-data-store-cpt.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/data-stores/class-wc-product-booking-person-type-data-store-cpt.php' );
+
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/wc-bookings-functions.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-form-handler.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-order-manager.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-bookings-controller.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-cron-manager.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-bookings-ics-exporter.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/gateways/class-wc-bookings-gateway.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/integrations/class-wc-bookings-google-calendar-integration.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/booking-form/class-wc-booking-form.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-coupon.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-product-class-loader.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-product-booking-rule-manager.php' );
 
 		if ( class_exists( 'WC_Product_Addons' ) ) {
-			include( 'includes/integrations/class-wc-bookings-addons.php' );
+			include_once( WC_BOOKINGS_ABSPATH . 'includes/integrations/class-wc-bookings-addons.php' );
 		}
 	}
 
@@ -237,18 +270,18 @@ KEY resource_id (resource_id)
 	 * Init self
 	 */
 	public function init() {
-		include( 'includes/class-wc-booking-email-manager.php' );
-		include( 'includes/class-wc-booking-cart-manager.php' );
-		include( 'includes/class-wc-booking-checkout-manager.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-email-manager.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-cart-manager.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/class-wc-booking-checkout-manager.php' );
 	}
 
 	/**
 	 * Include admin
 	 */
 	public function admin_includes() {
-		include( 'includes/admin/class-wc-bookings-admin.php' );
-		include( 'includes/admin/class-wc-bookings-ajax.php' );
-		include( 'includes/admin/class-wc-bookings-addons.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/admin/class-wc-bookings-admin.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/admin/class-wc-bookings-ajax.php' );
+		include_once( WC_BOOKINGS_ABSPATH . 'includes/admin/class-wc-bookings-addons.php' );
 	}
 
 	/**
@@ -309,8 +342,8 @@ KEY resource_id (resource_id)
 		register_post_type( 'wc_booking',
 			apply_filters( 'woocommerce_register_post_type_wc_booking',
 				array(
-					'label'  => __( 'Booking', 'woocommerce-bookings' ),
-					'labels' => array(
+					'label'                      => __( 'Booking', 'woocommerce-bookings' ),
+					'labels'                     => array(
 							'name'               => __( 'Bookings', 'woocommerce-bookings' ),
 							'singular_name'      => __( 'Booking', 'woocommerce-bookings' ),
 							'add_new'            => __( 'Add Booking', 'woocommerce-bookings' ),
@@ -327,20 +360,21 @@ KEY resource_id (resource_id)
 							'menu_name'          => _x( 'Bookings', 'Admin menu name', 'woocommerce-bookings' ),
 							'all_items'          => __( 'All Bookings', 'woocommerce-bookings' ),
 						),
-					'description' 			=> __( 'This is where bookings are stored.', 'woocommerce-bookings' ),
-					'public' 				=> false,
-					'show_ui' 				=> true,
-					'capability_type' 		=> 'product',
-					'map_meta_cap'			=> true,
-					'publicly_queryable' 	=> false,
-					'exclude_from_search' 	=> true,
-					'show_in_menu' 			=> true,
-					'hierarchical' 			=> false,
-					'show_in_nav_menus' 	=> false,
-					'rewrite' 				=> false,
-					'query_var' 			=> false,
-					'supports' 				=> array( '' ),
-					'has_archive' 			=> false,
+					'description'                => __( 'This is where bookings are stored.', 'woocommerce-bookings' ),
+					'public'                     => false,
+					'show_ui'                    => true,
+					'capability_type'            => 'product',
+					'map_meta_cap'               => true,
+					'publicly_queryable'         => false,
+					'exclude_from_search'        => true,
+					'show_in_menu'               => true,
+					'hierarchical'               => false,
+					'show_in_nav_menus'          => false,
+					'rewrite'                    => false,
+					'query_var'                  => false,
+					'supports'                   => array( '' ),
+					'has_archive'                => false,
+					'menu_icon'                  => 'dashicons-calendar-alt',
 				)
 			)
 		);
@@ -412,6 +446,18 @@ KEY resource_id (resource_id)
 			'show_in_admin_status_list' => false,
 			'label_count'               => false,
 		) );
+
+		if ( class_exists( 'WC_Deposits' ) && is_admin()
+			 && isset( $_GET['post_type'] ) && 'wc_booking' === $_GET['post_type'] ) {
+			register_post_status( 'wc-partial-payment', array(
+				'label'                     => '<span class="status-partial-payment tips" data-tip="' . _x( 'Partially Paid', 'woocommerce-deposits', 'woocommerce-deposits' ) . '">' . _x( 'Partially Paid', 'woocommerce-deposits', 'woocommerce-deposits' ) . '</span>',
+				'public'                    => true,
+				'exclude_from_search'       => false,
+				'show_in_admin_all_list'    => true,
+				'show_in_admin_status_list' => true,
+				'label_count'               => _n_noop( 'Partially Paid <span class="count">(%s)</span>', 'Partially Paid <span class="count">(%s)</span>', 'woocommerce-deposits' ),
+			) );
+		}
 	}
 
 	public function init_cache_clearing() {
@@ -572,6 +618,20 @@ KEY resource_id (resource_id)
 		}
 
 		return (array) $links;
+	}
+
+	/**
+	 * Register data stores for bookings.
+	 *
+	 * @param  array  $data_stores
+	 * @return array
+	 */
+	public function register_data_stores( $data_stores = array() ) {
+		$data_stores['booking']                     = 'WC_Booking_Data_Store';
+		$data_stores['product-booking']             = 'WC_Product_Booking_Data_Store_CPT';
+		$data_stores['product-booking-resource']    = 'WC_Product_Booking_Resource_Data_Store_CPT';
+		$data_stores['product-booking-person-type'] = 'WC_Product_Booking_Person_Type_Data_Store_CPT';
+		return $data_stores;
 	}
 }
 

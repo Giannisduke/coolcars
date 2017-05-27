@@ -56,4 +56,3 @@ class WC_Booking_Cron_Manager {
 }
 
 new WC_Booking_Cron_Manager();
-
