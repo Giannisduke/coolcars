@@ -1,0 +1,47 @@
+.main {
+  padding-top: 0px!important;
+}
+
+.cart-contents:before {
+
+    font-size:28px;
+    margin-top:10px;
+    font-style:normal;
+    font-weight:400;
+    padding-right:5px;
+    vertical-align: bottom;
+}
+
+.icon-icon_cart_count:before {
+    font-family: icomoon;
+    content: "\e905";
+    font-size:28px;
+    margin-top:10px;
+    font-style:normal;
+    font-weight:400;
+    padding-right:5px;
+    vertical-align: bottom;
+}
+
+.cart-contents:hover {
+    text-decoration: none;
+}
+.cart-contents-count {
+background-image: url("https://coolcars.dev/app/uploads/2017/02/icon_cart_count.svg");
+  background-size: cover;
+    color: #fff;
+    font-weight: 700;
+
+    padding: 1px 7px 3px 14px;
+    line-height: 1.6;
+    vertical-align: top;
+    font-size: .8rem;
+}
+
+.woocommerce-Price-amount {
+  font-family: roboto;
+  font-size: 1rem;
+  padding: 0px 15px 2px 15px;
+  color: $text-black;
+  border-bottom: 1px solid $brand-primary;
+}

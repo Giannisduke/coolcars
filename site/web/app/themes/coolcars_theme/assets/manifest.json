@@ -1,0 +1,32 @@
+{
+  "dependencies": {
+    "main.js": {
+      "files": [
+        "scripts/main.js"
+      ],
+      "main": true
+    },
+    "main.css": {
+      "files": [
+        "styles/main.scss"
+      ],
+      "main": true
+    },
+    "conditional-field.js": {
+      "files": [
+        "scripts/conditional-field.js"
+      ]
+    },
+    "timedropper.js": {
+      "files": [
+        "scripts/timedropper.js"
+      ]
+    },
+    "jquery.js": {
+      "bower": ["jquery"]
+    }
+  },
+  "config": {
+    "devUrl": "https://coolcars.dev"
+  }
+}

@@ -1,0 +1,187 @@
+.wrap {
+  padding-top: 150px;
+}
+
+.ribbon {
+  background-image: url(../images/ribbon.svg)!important;
+  background-repeat: no-repeat;
+  background-position: right;
+}
+
+
+/* CART */
+.cart-contents img {
+  padding: 3px;
+}
+
+.nav-item {
+  padding: 0px 20px 0px 20px;
+}
+
+li .nav-item img {
+padding: 0px;
+
+}
+
+.alignright {
+  width: 70px;
+}
+
+
+
+/* HOME PAGE */
+
+.grey {
+  background: $bg-grey;
+}
+
+.head_content {
+  padding: 20px;
+}
+
+.bg-inverse {
+  background: $bg-dark;
+}
+
+#slide01  {
+  background-color: #fff;
+}
+
+#slide02  {
+  background-color: #fff;
+}
+
+#slide03  {
+  background-color: #fff;
+}
+
+/* Cart */
+
+.cart {
+  border: 1px solid #dce0e0;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px 0 #dce0e0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 1em 1em 5.5em 1em;
+}
+
+.myaccount_user_container .view-cart {
+    display: none !important;
+}
+
+.woocommerce-checkout {
+  border: 1px solid #dce0e0;
+border-radius: 4px;
+box-shadow: 0 1px 3px 0 #dce0e0;
+margin-left: 0;
+margin-right: 0;
+padding: 10px;
+}
+
+.woocommerce-error, .woocommerce-info, .woocommerce-message {
+  font-family: $font-small;
+  font-weight: $font-small-weight;
+    line-height: 2em;
+  font-size: $font-small-size;
+
+    padding: 1em 2em 1em 3.5em !important;
+    margin: 0 0 0em !important;
+    position: relative;
+    background-color: #f7f6f7;
+    color: #515151;
+    border-top: 3px solid $brand-primary;
+    list-style: none !important;
+    width: auto;
+    word-wrap: break-word
+}
+
+
+.wc-bookings-date-picker .ui-datepicker .ui-datepicker-title {
+  font-family: 'RobotoCondensed-Bold', sans-serif;
+  line-height: 1em;
+
+padding: 1.4em 0;
+}
+
+.wc-bookings-date-picker-choose-date {
+padding: 1.4em 0em 0em 0em;
+}
+
+.woocommerce button.button.alt:hover {
+  background-color: $brand-primary;
+  color: #fff;
+}
+
+.ui-datepicker-header {
+  background-color: #666;
+color: #e0e0e0;
+font-weight: 700;
+box-shadow: inset 0 1px 1px 0 hsla(0, 0%, 98%, .2);
+text-shadow: 0px 0px 0 #000;
+filter: dropshadow(color=#000, offx=1, offy=-1);
+line-height: 30px;
+min-height: 30px !important;
+border-width: 1px 0 0;
+border-style: solid;
+border-color: #666
+}
+
+.wc-bookings-date-picker .ui-datepicker-header {
+  color: $bg-dark;
+}
+
+
+.wc-bookings-date-picker .ui-datepicker .ui-datepicker-prev {
+  top: 0.2em;
+background: $bg-white;
+border-radius: 0;
+font-weight: 400;
+height: 2.8em;
+width: 4em;
+}
+
+.ui-icon-circle-triangle-e {
+  background-image: url(../images/icon_r_next.svg)!important;
+  background-repeat: no-repeat;
+  background-size: 16px 16px!important;
+  background-position: center!important;
+}
+.ui-icon-circle-triangle-w {
+  background-image: url(../images/icon_r_previous.svg)!important;
+  background-repeat: no-repeat!important;
+  background-size: 16px 16px!important;
+  background-position: center!important;
+}
+
+
+.product_title {
+padding: 0.5em 0em 0em 0em;
+  font-family: Roboto, sans-serif;
+  font-weight: 500;
+  line-height: 1em;
+  font-size: 2.4em;
+  margin: auto;
+color: $text-black;
+}
+
+.product_price_box {
+  background-image: url(../images/ribbon.svg);
+background-repeat: no-repeat;
+background-size: 116px 117px;
+background-position: 20%;
+padding: 1.2em;
+}
+
+span.product_price {
+  padding: 0.5em 0em 0em 0em;
+
+}
+
+.logo_footer {
+  background-image: url(../images/logo_footer.svg);
+  background-repeat: no-repeat;
+  background-size: 160px 45px;
+  background-position: left;
+  padding: 4em;
+}

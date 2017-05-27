@@ -1,0 +1,60 @@
+/* Brand */
+.fixed-top.brand {
+  padding-top: 60px;
+  background: $bg-grey;
+  z-index: 1010;
+  border-bottom: 1px dotted #8c8b8b;
+}
+.brand h1 {
+  font-size: .8rem;
+  float: right;
+  padding-top: 5px;
+  color: #000;
+}
+.brand h1 a {
+  text-decoration: none;
+}
+
+.brand h1 a:hover {
+  text-decoration: none;
+}
+
+.brand img {
+  width: 248px;
+}
+
+
+.brand h2 {
+  font-size: 12px;
+  display: inline;
+  color: #fefefe;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+}
+
+
+
+.nav-item {
+  font-size: 14px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 400;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: #fefefe!important;
+}
+
+.icon_cart {
+  background-image: url(../images/icon_cart.svg);
+  background-repeat: no-repeat;
+  background-size: 38px 17px;
+  background-position: center;
+}
+
+.icon_fb {
+  background-image: url(../images/icon_fb.svg);
+  background-repeat: no-repeat;
+  background-size: 38px 17px;
+  background-position: center;
+}
