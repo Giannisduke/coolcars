@@ -43,8 +43,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		 * woocommerce_before_single_product_summary hook.
 		 *
 		  * @hooked woocommerce_template_single_title - 5
-						 * @hooked woocommerce_template_single_price - 15
-		 * @hooked woocommerce_show_product_sale_flash - 10
+						 * @hooked woocommerce_template_single_price - 10
+		 * @hooked woocommerce_show_product_sale_flash - 15
+		 * @hooked woocommerce_template_single_meta - 17
 		 * @hooked woocommerce_show_product_images - 20
 		 * @hooked woocommerce_output_product_data_tabs - 30
 

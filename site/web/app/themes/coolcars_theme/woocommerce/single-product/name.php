@@ -1,8 +1,8 @@
 <?php
 /**
- * Cart item data (when outputting non-flat)
+ * Single Product Meta
  *
- * This template can be overridden by copying it to yourtheme/woocommerce/cart/cart-item-data.php.
+ * This template can be overridden by copying it to yourtheme/woocommerce/single-product/meta.php.
  *
  * HOWEVER, on occasion WooCommerce will need to update template files and you
  * (the theme developer) will need to copy the new files to your theme to
@@ -13,19 +13,25 @@
  * @see 	    https://docs.woocommerce.com/document/template-structure/
  * @author 		WooThemes
  * @package 	WooCommerce/Templates
- * @version 	2.4.0
+ * @version     1.6.4
  */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+	exit; // Exit if accessed directly
+}
+
+global $item_data, $cart_item;
+
+if ( isset( $cartItem['your_first_name'] ) ) {
+		$data[] = array(
+				'name' => 'My custom data',
+				'value' => $cartItem['your_first_name']
+		);
+echo $data;
 }
 
 
-?>
-<dl class="variation">
-	<?php
 
-	foreach ( $item_data as $data ) : ?>
-		<dt class="variation-<?php echo sanitize_html_class( $data['key'] ); ?>"><?php echo wp_kses_post( $data['key'] ); ?>:</dt>
-		<dd class="variation-<?php echo sanitize_html_class( $data['key'] ); ?>"><?php echo wp_kses_post( ( $data['display'] ) ); ?></dd>
-	<?php endforeach; ?>
-</dl>
+
+
+echo 'test';

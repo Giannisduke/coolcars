@@ -23,6 +23,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** @global WC_Checkout $checkout */
 
 ?>
+
+ <?php do_action('custom_data');?>
+
+
+
 <div class="woocommerce-billing-fields2">
 	<?php if ( wc_ship_to_billing_address_only() && WC()->cart->needs_shipping() ) : ?>
 

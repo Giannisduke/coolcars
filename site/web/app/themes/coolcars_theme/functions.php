@@ -114,6 +114,9 @@ remove_action ('woocommerce_single_product_summary', 'woocommerce_template_singl
 add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_title', 5, 0) ;
 remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_price') ;
 add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_price', 10, 0) ;
+// Product meta
+remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40) ;
+add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_meta', 17) ;
 
 /**
  * The following hook will add a input field right before "add to cart button"
@@ -124,15 +127,14 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
 
 
      echo '<fieldset class="wc-bookings-fields">';
-
-      echo '<div class="form-group row">';
+     echo '<div class="form-group row">';
  }
  add_action( 'woocommerce_before_add_to_cart_button', 'add_before_your_first_name_field', 10 );
 
  function add_your_first_name_field() {
 
  echo '<div class="col-lg-6">';
-     echo '<label>Name</label>';
+     //echo '<label>Name</label>';
      echo '  <input name="your-first-name" type="text" class="form-control" id="inputName" placeholder="placeholder inline" required>';
  echo '</div>';
  }
@@ -208,16 +210,36 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
  }
 
 
- add_filter( 'woocommerce_get_item_data', function ( $data, $cartItem ) {
-     if ( isset( $cartItem['your_first_name'] ) ) {
-         $data[] = array(
-             'name' => 'My custom data',
-             'value' => $cartItem['your_first_name']
-         );
-     }
 
-     return $data;
- }, 10, 2 );
+ if ( ! function_exists( 'woocommerce_template_single_name' ) ) {
+
+ 	/**
+ 	 * Output the product meta.
+ 	 *
+ 	 * @subpackage	Product
+ 	 */
+ 	function woocommerce_template_single_name() {
+ 		wc_get_template( 'single-product/name.php' );
+ 	}
+ }
+
+
+
+
+ function custom_data( $item_data, $cart_item ) {
+
+   if ( isset( $cartItem['your_first_name'] ) ) {
+       $data[] = array(
+           'name' => 'My custom data',
+           'value' => $cartItem['your_first_name']
+       );
+   }
+
+   echo '<div class="test">';
+   echo $data;
+   echo '</div>';
+  }
+  add_action( 'custom_data', 'woocommerce_template_single_name' );
 
 
 
@@ -235,13 +257,13 @@ $stored_value = "something pulled from the DB";
    unset($fields['billing']['billing_country']);
    unset($fields['billing']['billing_city']);
  $fields['order']['order_comments']['placeholder'] = 'My new placeholder';
-$fields['billing']['billing_first_name']['default'] = $cartItem['your_first_name'];
+$fields['billing']['billing_first_name']['default'] = do_action('woocommerce_template_single_name');
 
 
      return $fields;
  }
 
-// add_action( 'woocommerce_before_cart', 'bbloomer_print_cart_array' );
+add_action( 'woocommerce_before_cart', 'bbloomer_print_cart_array' );
 function bbloomer_print_cart_array() {
 $cart = WC()->cart->get_cart();
 print_r($cart);
