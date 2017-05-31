@@ -396,6 +396,18 @@ $stored_value = "something pulled from the DB";
      return $fields;
  }
 
+
+
+ //*Add custom redirection
+add_action( 'template_redirect', 'wc_custom_redirect_after_purchase' );
+function wc_custom_redirect_after_purchase() {
+	global $wp;
+  if ( is_checkout() && ! empty( $wp->query_vars['order-received'] ) ) {
+		wp_redirect( 'https://coolcars.gr/thank-you-for-your-order/' );
+		exit;
+	}
+}
+
 //add_action( 'woocommerce_before_cart', 'bbloomer_print_cart_array' );
 function bbloomer_print_cart_array() {
 $cart = var_dump($GLOBALS);
