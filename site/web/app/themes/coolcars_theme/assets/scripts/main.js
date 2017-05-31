@@ -20,17 +20,38 @@
       init: function() {
         // JavaScript to be fired on all pages
 
-        $( '.in_time' ).timeDropper({
-          'meridians': false,
-          'setCurrentTime': false,
-          'format': 'H:mm a'
-        });
-        $( '.out_time' ).timeDropper({
-          'meridians': false,
-          'setCurrentTime': false,
-          'format': 'H:mm a'
+          //  $("#billing_first_name").val($("#variation-Yourfirstname").text());
+            //$('#billing_first_name').val('content that goes into the textarea');
+
+
+        $("#billing_first_name").val($(".variation-Yourfirstname").text());
+        $("#billing_last_name").val($(".variation-Yourlastname").text());
+        $("#billing_phone").val($(".variation-YourPhone").text());
+        $("#billing_email").val($(".variation-Youremail").text());
+
+        $('input.in_time').timepicker({
+          timeFormat: 'h:mm p',
+      interval: 30,
+      minTime: '12',
+      maxTime: '11:00pm',
+      defaultTime: '12',
+      startTime: '12:00',
+      dynamic: false,
+      dropdown: true,
+      scrollbar: true
         });
 
+        $('input.out_time').timepicker({
+          timeFormat: 'h:mm p',
+      interval: 30,
+      minTime: '12',
+      maxTime: '11:00pm',
+      defaultTime: '12',
+      startTime: '12:00',
+      dynamic: false,
+      dropdown: true,
+      scrollbar: true
+        });
 
  jQuery('#place_order').click();
 

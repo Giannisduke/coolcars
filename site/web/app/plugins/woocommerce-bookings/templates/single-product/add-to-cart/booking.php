@@ -24,9 +24,9 @@ do_action( 'woocommerce_before_add_to_cart_form' ); ?>
 
 		<?php $booking_form->output(); ?>
 
-		<?php do_action( 'woocommerce_before_add_to_cart_button' ); ?>
+		<div class="wc-bookings-booking-cost" style=""></div>
 
-		<div class="wc-bookings-booking-cost" style="display:none"></div>
+		<?php do_action( 'woocommerce_before_add_to_cart_button' ); ?>
 
 	</div>
 

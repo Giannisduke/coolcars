@@ -101,7 +101,7 @@ padding: 0 !important;
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #dce0e0;
-  padding: 0em 0em 2em 0em;
+  padding: 0em 0em 0em 0em;
   width: 100%;
 }
 
@@ -129,6 +129,7 @@ padding: 0 !important;
     font-size: 1.7em;
     line-height: 1.6em;
     text-align: center;
+margin: 0px 0 20px 0;
 }
 .wc-bookings-booking-form fieldset input.error {
   border-color:red;
@@ -372,6 +373,7 @@ body {
 
 .main-in {
   background: #fff;
+padding: 40px 0px 20px 0 !important
 }
 
 
@@ -1166,10 +1168,6 @@ box-shadow: 0 1px 0 #fff;
 }
 
 
-.main-in {
-  padding-top: 80px;
-}
-
 h1.entry-title {
   font-size: 2rem;
 }
@@ -1220,55 +1218,13 @@ header {
   letter-spacing: .0625em;
 }
 
-#buddypress div.item-list-tabs ul li {
-  background-repeat: no-repeat;
-  background-position: center top;
-  padding: 10px;
+.hidden_form {
+  display: none;
 }
 
-#buddypress div#item-nav ul #xprofile-personal-lia:before,
-#buddypress div#item-nav ul #notifications-personal-lia:before,
-#buddypress div#item-nav ul #messages-personal-lia:before,
-#buddypress div#item-nav ul #friends-personal-lia:before,
-#buddypress div#item-nav ul #groups-personal-lia:before,
-#buddypress div#item-nav ul #forums-personal-lia:before,
-#buddypress div#item-nav ul #media-personal-lia:before,
-#buddypress div#item-nav ul #settings-personal-lia:before,
-#buddypress div#item-nav ul #activity-personal-li a:before {
-    color: rgba(0, 0, 0, 0);
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-#buddypress div#item-nav ul #activity-personal-li a:before {
-    background-image: url(" ");
-}
-
-
-#buddypress div#item-nav ul #messages-personal-li {
-    background-image: url(" ");
-}
-
-#buddypress div#item-nav ul #friends-personal-li {
-    background-image: url(" ");
-}
-
-#buddypress div#item-nav ul #groups-personal-li {
-    background-image: url(" ");
-}
-
-#buddypress div#item-nav ul #forums-personal-li {
-    background-image: url(" ");
-}
-
-#buddypress div#item-nav ul #media-personal-li {
-    background-image: url(" ");
-}
-
-#buddypress div#item-nav ul #settings-personal-li {
-    background-image: url(" ");
-}
-
-#sitewide-notice #message {
-    display: none;
+.wc-bookings-booking-form .wc-bookings-booking-cost {
+  border-top: 0px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 40px 0px 40px 0;
+text-align: center;
 }

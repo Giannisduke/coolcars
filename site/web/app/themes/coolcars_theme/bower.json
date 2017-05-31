@@ -13,7 +13,8 @@
     "imagesloaded": "^4.1.1",
     "select2": "select2-ng#^4.0.3",
     "pretty-checkbox": "^2.1.0",
-    "bootstrap-validator": "^0.11.9"
+    "bootstrap-validator": "^0.11.9",
+    "jquery-timepicker-wvega": "^1.3.5"
   },
   "overrides": {
     "bootstrap-sass": {

@@ -113,7 +113,7 @@ function ps_empty_cart( $cart_item_data, $product_id, $variation_id ) {
 remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_title', 5, 0) ;
 add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_title', 5, 0) ;
 remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_price') ;
-add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_price', 10, 0) ;
+//add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_price', 10, 0) ;
 // Product meta
 remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40) ;
 add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_meta', 17) ;
@@ -124,27 +124,75 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
  */
 
  function add_before_your_first_name_field() {
-
-
-     echo '<fieldset class="wc-bookings-fields">';
+     echo '<fieldset class="wc-bookings-fields hidden_form">';
      echo '<div class="form-group row">';
  }
  add_action( 'woocommerce_before_add_to_cart_button', 'add_before_your_first_name_field', 10 );
 
- function add_your_first_name_field() {
+ function add_intime_field() {
+    echo '<div class="row">';
+    echo '<div class="col col-lg-6">';
+    echo '<label>Check-in</label>';
+    echo '<input type="text" name="in-time" value="12:30" class="in_time"/>';
+    echo '</div>';
+ }
+ add_action( 'woocommerce_after_calendar', 'add_intime_field', 15 );
 
- echo '<div class="col-lg-6">';
+ function add_outtime_field() {
+   echo '<div class="col col-lg-6">';
+   echo '<label>Check-out</label>';
+   echo '<input type="text" name="out-time" value="12:30" class="out_time"/>';
+   echo '</div>';
+      echo '</div>';
+ }
+ add_action( 'woocommerce_after_calendar', 'add_outtime_field', 16 );
+
+ function add_your_first_name_field() {
+   echo '<div class="col-lg-6">';
      //echo '<label>Name</label>';
-     echo '  <input name="your-first-name" type="text" class="form-control" id="inputName" placeholder="placeholder inline" required>';
+     echo '<input name="your-first-name" type="text" class="form-control" id="inputName" placeholder="Your First Name" required>';
  echo '</div>';
  }
  add_action( 'woocommerce_before_add_to_cart_button', 'add_your_first_name_field', 20 );
+
+ function add_your_last_name_field() {
+ echo '<div class="col-lg-6">';
+ //echo '<div class="form-group">';
+ //echo '<label>Last Name</label>';
+     echo '<input type="text" name="your-last-name" placeholder="Last Name" value="" />';
+ echo '</div>';
+ //echo '</div>';
+ }
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_last_name_field', 21 );
+
+
+ function add_your_email_field() {
+ echo '<div class="col-lg-6">';
+ //echo '<label>Email</label>';
+     echo '<input type="email" name="your-email" placeholder="email" value="" />';
+ echo '</div>';
+ }
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_email_field', 22 );
+
+ function add_your_phone_field() {
+ echo '<div class="col-lg-6">';
+ //echo '<label>Phone</label>';
+
+   echo '<input type="text" name="your-phone" placeholder="Phone" value="" />';
+ echo '</div>';
+ }
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_phone_field', 23 );
+
+
+
+
 
  function add_after_your_first_name_field() {
    echo '</div>';
      echo '</fieldset>';
  }
  add_action( 'woocommerce_before_add_to_cart_button', 'add_after_your_first_name_field', 30 );
+
 
 
 
@@ -158,7 +206,49 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
  }
  add_action( 'woocommerce_add_cart_item_data', 'save_your_first_name_field', 10, 2 );
 
- function render_meta_on_cart_and_checkout( $cart_data, $cart_item = null ) {
+ function save_your_last_name_field( $cart_item_data, $product_id ) {
+     if( isset( $_REQUEST['your-last-name'] ) ) {
+         $cart_item_data[ 'your_last_name' ] = $_REQUEST['your-last-name'];
+         /* below statement make sure every add to cart action as unique line item */
+         $cart_item_data['unique_key'] = md5( microtime().rand() );
+     }
+     return $cart_item_data;
+ }
+add_action( 'woocommerce_add_cart_item_data', 'save_your_last_name_field', 10, 3 );
+
+
+function save_your_email_field( $cart_item_data, $product_id ) {
+    if( isset( $_REQUEST['your-email'] ) ) {
+        $cart_item_data[ 'your_email' ] = $_REQUEST['your-email'];
+        /* below statement make sure every add to cart action as unique line item */
+        $cart_item_data['unique_key'] = md5( microtime().rand() );
+    }
+    return $cart_item_data;
+}
+add_action( 'woocommerce_add_cart_item_data', 'save_your_email_field', 10, 5 );
+
+function save_your_phone_field( $cart_item_data, $product_id ) {
+    if( isset( $_REQUEST['your-phone'] ) ) {
+        $cart_item_data[ 'your_phone' ] = $_REQUEST['your-phone'];
+        /* below statement make sure every add to cart action as unique line item */
+        $cart_item_data['unique_key'] = md5( microtime().rand() );
+    }
+    return $cart_item_data;
+}
+add_action( 'woocommerce_add_cart_item_data', 'save_your_phone_field', 10, 6 );
+
+function save_intime_field( $cart_item_data, $product_id ) {
+    if( isset( $_REQUEST['in-time'] ) ) {
+        $cart_item_data[ 'in_time' ] = $_REQUEST['in-time'];
+        /* below statement make sure every add to cart action as unique line item */
+        $cart_item_data['unique_key'] = md5( microtime().rand() );
+    }
+    return $cart_item_data;
+}
+add_action( 'woocommerce_add_cart_item_data', 'save_intime_field', 10, 7 );
+
+
+ function render_on_cart_and_checkout_your_first_name( $cart_data, $cart_item = null ) {
      $custom_items = array();
      /* Woo 2.4.2 updates */
      if( !empty( $cart_data ) ) {
@@ -169,45 +259,66 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
      }
      return $custom_items;
  }
- add_filter( 'woocommerce_get_item_data', 'render_meta_on_cart_and_checkout', 10, 2 );
+ add_filter( 'woocommerce_get_item_data', 'render_on_cart_and_checkout_your_first_name', 10, 2 );
 
-
- add_filter( 'woocommerce_get_item_data', 'so_34900990_display_cart_data', 10, 2 );
- function so_34900990_display_cart_data( $item_data, $cart_item ){
-
-     if ( ! empty( $cart_item['booking'] ) ) {
-
-         $date_format = apply_filters( 'woocommerce_bookings_date_format', wc_date_format() );
-         $time_format = apply_filters( 'woocommerce_bookings_time_format', ', ' . wc_time_format() );
-         $start_date = apply_filters( 'woocommerce_bookings_get_end_date_with_time', date_i18n( $date_format . $time_format, $cart_item['booking']['_start_date'] ) );
-
-         $item_data[] = array(
-             'key'    => __( 'Strat Date', 'your-textdomain' ),
-             'value'   => $cart_item['booking']['_start_date'],
-             'display' => $start_date,
-         );
+ function render_on_cart_and_checkout_your_last_name( $cart_data, $cart_item = null ) {
+     $custom_items = array();
+     /* Woo 2.4.2 updates */
+     if( !empty( $cart_data ) ) {
+         $custom_items = $cart_data;
      }
-     return $item_data;
- }
-
-
- add_filter( 'woocommerce_get_item_data', 'so_34900999_display_cart_data', 10, 3 );
- function so_34900999_display_cart_data( $item_data, $cart_item ){
-
-     if ( ! empty( $cart_item['booking'] ) ) {
-
-         $date_format = apply_filters( 'woocommerce_bookings_date_format', wc_date_format() );
-         $time_format = apply_filters( 'woocommerce_bookings_time_format', ', ' . wc_time_format() );
-         $end_date = apply_filters( 'woocommerce_bookings_get_end_date_with_time', date_i18n( $date_format . $time_format, $cart_item['booking']['_end_date'] ) );
-
-         $item_data[] = array(
-             'key'    => __( 'End Date', 'your-textdomain' ),
-             'value'   => $cart_item['booking']['_end_date'],
-             'display' => $end_date,
-         );
+     if( isset( $cart_item['your_last_name'] ) ) {
+         $custom_items[] = array( "name" => 'Your last name', "value" => $cart_item['your_last_name'] );
      }
-     return $item_data;
+     return $custom_items;
  }
+add_filter( 'woocommerce_get_item_data', 'render_on_cart_and_checkout_your_last_name', 10, 3 );
+
+function render_on_cart_and_checkout_your_email( $cart_data, $cart_item = null ) {
+    $custom_items = array();
+    /* Woo 2.4.2 updates */
+    if( !empty( $cart_data ) ) {
+        $custom_items = $cart_data;
+    }
+    if( isset( $cart_item['your_email'] ) ) {
+        $custom_items[] = array( "name" => 'Your email', "value" => $cart_item['your_email'] );
+    }
+    return $custom_items;
+}
+
+add_filter( 'woocommerce_get_item_data', 'render_on_cart_and_checkout_your_email', 10, 4 );
+
+function render_on_cart_and_checkout_your_phone( $cart_data, $cart_item = null ) {
+    $custom_items = array();
+    /* Woo 2.4.2 updates */
+    if( !empty( $cart_data ) ) {
+        $custom_items = $cart_data;
+    }
+    if( isset( $cart_item['your_phone'] ) ) {
+        $custom_items[] = array( "name" => 'Your Phone', "value" => $cart_item['your_phone'] );
+    }
+    return $custom_items;
+}
+
+add_filter( 'woocommerce_get_item_data', 'render_on_cart_and_checkout_your_phone', 10, 5 );
+
+
+function render_on_cart_and_checkout_in_time( $cart_data, $cart_item = null ) {
+    $custom_items = array();
+    /* Woo 2.4.2 updates */
+    if( !empty( $cart_data ) ) {
+        $custom_items = $cart_data;
+    }
+    if( isset( $cart_item['in_time'] ) ) {
+        $custom_items[] = array( "name" => 'In time', "value" => $cart_item['in_time'] );
+    }
+    return $custom_items;
+}
+
+add_filter( 'woocommerce_get_item_data', 'render_on_cart_and_checkout_in_time', 10, 6 );
+
+
+
 
 
 
@@ -226,27 +337,50 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
 
 
 
- function custom_data( $item_data, $cart_item ) {
 
-   if ( isset( $cartItem['your_first_name'] ) ) {
-       $data[] = array(
-           'name' => 'My custom data',
-           'value' => $cartItem['your_first_name']
-       );
+  /**
+   * Optimize WooCommerce Scripts
+   * Remove WooCommerce Generator tag, styles, and scripts from non WooCommerce pages.
+   */
+  add_action( 'wp_enqueue_scripts', 'child_manage_woocommerce_styles', 99 );
+  function child_manage_woocommerce_styles() {
+   //remove generator meta tag
+   remove_action( 'wp_head', array( $GLOBALS['woocommerce'], 'generator' ) );
+
+   //first check that woo exists to prevent fatal errors
+   if ( function_exists( 'is_woocommerce' ) ) {
+   //dequeue scripts and styles
+   if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() ) {
+   wp_dequeue_style( 'woocommerce_frontend_styles' );
+   wp_dequeue_style( 'woocommerce_fancybox_styles' );
+   wp_dequeue_style( 'woocommerce_chosen_styles' );
+   wp_dequeue_style( 'woocommerce_prettyPhoto_css' );
+   wp_dequeue_script( 'wc_price_slider' );
+   wp_dequeue_script( 'wc-single-product' );
+   wp_dequeue_script( 'wc-add-to-cart' );
+   wp_dequeue_script( 'wc-cart-fragments' );
+   wp_dequeue_script( 'wc-checkout' );
+   wp_dequeue_script( 'wc-add-to-cart-variation' );
+   wp_dequeue_script( 'wc-single-product' );
+   wp_dequeue_script( 'wc-cart' );
+   wp_dequeue_script( 'wc-chosen' );
+   wp_dequeue_script( 'woocommerce' );
+   wp_dequeue_script( 'prettyPhoto' );
+   wp_dequeue_script( 'prettyPhoto-init' );
+   wp_dequeue_script( 'jquery-blockui' );
+   wp_dequeue_script( 'jquery-placeholder' );
+   wp_dequeue_script( 'fancybox' );
+   wp_dequeue_script( 'jqueryui' );
+   }
    }
 
-   echo '<div class="test">';
-   echo $data;
-   echo '</div>';
   }
-  add_action( 'custom_data', 'woocommerce_template_single_name' );
-
-
 
  // Hook in specified cart item data
  add_filter( 'woocommerce_checkout_fields' , 'custom_override_checkout_fields' );
 
  function custom_override_checkout_fields( $fields  ) {
+
 $stored_value = "something pulled from the DB";
    unset($fields['billing']['billing_address_1']);
    unset($fields['billing']['billing_address_2']);
@@ -257,14 +391,13 @@ $stored_value = "something pulled from the DB";
    unset($fields['billing']['billing_country']);
    unset($fields['billing']['billing_city']);
  $fields['order']['order_comments']['placeholder'] = 'My new placeholder';
-$fields['billing']['billing_first_name']['default'] = do_action('woocommerce_template_single_name');
 
 
      return $fields;
  }
 
-add_action( 'woocommerce_before_cart', 'bbloomer_print_cart_array' );
+//add_action( 'woocommerce_before_cart', 'bbloomer_print_cart_array' );
 function bbloomer_print_cart_array() {
-$cart = WC()->cart->get_cart();
+$cart = var_dump($GLOBALS);
 print_r($cart);
 }
