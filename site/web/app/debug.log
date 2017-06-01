@@ -11418,3 +11418,5 @@ Stack trace:
 [31-May-2017 20:20:17 UTC] PHP   1. {main}() /srv/www/coolcars.gr/current/web/wp/wp-login.php:0
 [31-May-2017 20:20:17 UTC] PHP   2. wp_clear_auth_cookie() /srv/www/coolcars.gr/current/web/wp/wp-login.php:882
 [31-May-2017 20:20:17 UTC] PHP   3. setcookie() /srv/www/coolcars.gr/current/web/wp/wp-includes/pluggable.php:948
+[31-May-2017 20:30:02 UTC] PHP Notice:  Undefined index: SERVER_NAME in /srv/www/coolcars.gr/current/web/wp/wp-includes/pluggable.php on line 326
+[01-Jun-2017 00:01:11 UTC] PHP Notice:  Undefined index: SERVER_NAME in /srv/www/coolcars.gr/current/web/wp/wp-includes/pluggable.php on line 326

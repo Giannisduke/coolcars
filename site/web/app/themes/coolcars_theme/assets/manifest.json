@@ -17,11 +17,6 @@
         "scripts/conditional-field.js"
       ]
     },
-    "timedropper.js": {
-      "files": [
-        "scripts/timedropper.js"
-      ]
-    },
     "jquery.js": {
       "bower": ["jquery"]
     }
