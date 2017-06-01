@@ -443,7 +443,7 @@ KEY resource_id (resource_id)
 			'public'                    => false,
 			'exclude_from_search'       => false,
 			'show_in_admin_all_list'    => false,
-			'show_in_admin_status_list' => false,
+			'show_in_admin_status_list' => true,
 			'label_count'               => false,
 		) );
 

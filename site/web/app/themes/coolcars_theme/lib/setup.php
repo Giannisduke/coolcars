@@ -113,7 +113,7 @@ function assets() {
   }
   wp_enqueue_script('sage/js', Assets\asset_path('scripts/main.js'), ['jquery'], null, true);
   wp_enqueue_script('form/conditional_js', Assets\asset_path('scripts/conditional-field.js'), ['jquery'], null, true);
-  wp_enqueue_script('dates/timedropper_js', Assets\asset_path('scripts/timedropper.js'), ['jquery'], null, true);
+  
 
 }
 add_action('wp_enqueue_scripts', __NAMESPACE__ . '\\assets', 100);
