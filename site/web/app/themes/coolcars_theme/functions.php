@@ -467,14 +467,11 @@ $stored_value = "something pulled from the DB";
 
      return $fields;
  }
- add_filter( 'woocommerce_email_order_meta_fields', 'custom_woocommerce_email_order_meta_fields', 10, 3 );
+ add_filter('woocommerce_email_order_meta_keys', 'my_custom_order_meta_keys');
 
- function custom_woocommerce_email_order_meta_fields( $fields, $sent_to_admin, $order ) {
-     $fields['meta_key'] = array(
-         'label' => __( 'Label' ),
-         'value' => get_post_meta( $order->id, 'in_time', true ),
-     );
-     return $fields;
+ function my_custom_order_meta_keys( $keys ) {
+      $keys[] = 'Your Phone'; // This will look for a custom field called 'Tracking Code' and add it to emails
+      return $keys;
  }
 
 
