@@ -467,7 +467,15 @@ $stored_value = "something pulled from the DB";
 
      return $fields;
  }
+ add_filter( 'woocommerce_email_order_meta_fields', 'custom_woocommerce_email_order_meta_fields', 10, 3 );
 
+ function custom_woocommerce_email_order_meta_fields( $fields, $sent_to_admin, $order ) {
+     $fields['meta_key'] = array(
+         'label' => __( 'Label' ),
+         'value' => get_post_meta( $order->id, 'in_time', true ),
+     );
+     return $fields;
+ }
 
 
  //*Add custom redirection
@@ -479,6 +487,9 @@ function wc_custom_redirect_after_purchase() {
 		exit;
 	}
 }
+
+
+
 
 //add_action( 'woocommerce_before_cart', 'bbloomer_print_cart_array' );
 function bbloomer_print_cart_array() {
