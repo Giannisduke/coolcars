@@ -469,6 +469,7 @@ h6 {
   font-size: 1.2rem;
   color: #e04037;
   vertical-align: top;
+  display: none;
 }
 
 .price_in {
@@ -1218,8 +1219,12 @@ header {
   letter-spacing: .0625em;
 }
 
+.second_step {
+  margin: 20px 0!important;
+}
 .hidden_form {
   display: none;
+
 }
 
 .wc-bookings-booking-form .wc-bookings-booking-cost {

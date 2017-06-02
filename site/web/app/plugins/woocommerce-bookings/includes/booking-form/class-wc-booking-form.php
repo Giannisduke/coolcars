@@ -77,7 +77,7 @@ class WC_Booking_Form {
 			'i18n_date_fully_booked'     => __( 'This date is fully booked and unavailable', 'woocommerce-bookings' ),
 			'i18n_date_partially_booked' => __( 'This date is partially booked - but bookings still remain', 'woocommerce-bookings' ),
 			'i18n_date_available'        => __( 'This date is available', 'woocommerce-bookings' ),
-			'i18n_start_date'            => __( 'Choose a Start Date', 'woocommerce-bookings' ),
+			'i18n_start_date'            => __( 'Choose a Check in Date', 'woocommerce-bookings' ),
 			'i18n_end_date'              => __( 'Choose an End Date', 'woocommerce-bookings' ),
 			'i18n_dates'                 => __( 'Dates', 'woocommerce-bookings' ),
 			'i18n_choose_options'        => __( 'Please select the options for your booking above first', 'woocommerce-bookings' ),

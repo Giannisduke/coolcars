@@ -38,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="container" id="product-<?php the_ID(); ?>" <?php post_class(); ?>>
 <div class="row">
-	<div class="col-lg-6">
+	<div class="col-lg-5">
 	<?php
 		/**
 		 * woocommerce_before_single_product_summary hook.
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		do_action( 'woocommerce_before_single_product_summary' );
 	?>
 </div>
-<div class="col-lg-6">
+<div class="col-lg-7">
 	<div class="summary entry-summary">
 
 		<?php

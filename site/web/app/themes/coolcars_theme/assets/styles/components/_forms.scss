@@ -35,7 +35,7 @@ label input[type="checkbox"]:checked ~ span {
   transform: scale(0.8);
   transition: 0.5s;
   width: 270px;
-  left: -200px;
+  left: 0px;
   position: relative;
 
   label {
@@ -54,7 +54,7 @@ label input[type="checkbox"]:checked ~ span {
     transform: scale(1);
     overflow: visible;
     width: 270px;
-    left: -200px;
+    left: 0px;
     position: relative;
   }
 
@@ -85,6 +85,39 @@ body {
 }
 * {
   box-sizing: border-box;
+}
+
+.custom-radio {
+  margin: 45px 20px 10px 25px!important;
+}
+
+.custom-radio-airport {
+  background-image: url(../images/icon_flight.svg);
+  background-size: 40px 36px;
+  background-repeat: no-repeat;
+  background-position-x: 50%
+}
+
+.custom-radio-port {
+  background-image: url(../images/icon_boat.svg);
+  background-size: 40px 36px;
+  background-repeat: no-repeat;
+  background-position-x: 50%
+}
+
+.custom-radio-location {
+  background-image: url(../images/icon_location.svg);
+  background-size: 40px 36px;
+  background-repeat: no-repeat;
+  background-position-x: 50%
+}
+
+.port-position {
+margin-left: -100px !important;
+}
+
+.location-position {
+margin-left: -200px !important;
 }
 
 

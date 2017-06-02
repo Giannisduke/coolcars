@@ -118,13 +118,16 @@ remove_action ('woocommerce_single_product_summary', 'woocommerce_template_singl
 remove_action ('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40) ;
 add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_single_meta', 17) ;
 
+remove_action ('woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10) ;
+
+
 /**
  * The following hook will add a input field right before "add to cart button"
  * will be used for getting Your first name
  */
 
  function add_before_your_first_name_field() {
-     echo '<fieldset class="wc-bookings-fields hidden_form">';
+     echo '<fieldset class="wc-bookings-fields second_step hidden_form">';
      echo '<div class="form-group row">';
  }
  add_action( 'woocommerce_before_add_to_cart_button', 'add_before_your_first_name_field', 10 );
@@ -136,7 +139,7 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
     echo '<input type="text" name="in-time" value="12:30" class="in_time"/>';
     echo '</div>';
  }
- add_action( 'woocommerce_after_calendar', 'add_intime_field', 15 );
+ add_action( 'woocommerce_after_calendar', 'add_intime_field', 11 );
 
  function add_outtime_field() {
    echo '<div class="col col-lg-6">';
@@ -145,7 +148,81 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
    echo '</div>';
       echo '</div>';
  }
- add_action( 'woocommerce_after_calendar', 'add_outtime_field', 16 );
+ add_action( 'woocommerce_after_calendar', 'add_outtime_field', 12 );
+
+ function add_location_in_start_field() {
+  //echo '<div class="row">';
+  echo '<div class="col-lg-6">';
+   echo '<div class="row form-group">';
+ }
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_start_field', 13 );
+
+  function add_location_in_airport_field() {
+    echo '<div class="col-lg-4 text-center custom-radio-airport">';
+    echo '<input id="radio1" type="radio" name="pick-up" value="Airport" class="custom-radio" checked="">';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_airport_field', 14 );
+
+  function add_location_in_airport_text_field() {
+    echo '<div class="reveal-if-active">
+    <textarea name="pick-up-airport" class="input-text form-control require-if-active pick_up_airport" id="order_comments" placeholder="Flight Number ex. PH 4238" rows="4" cols="5"></textarea>
+    </div>
+    </div>';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_airport_text_field', 15 );
+
+  function add_location_in_port_field() {
+    echo '<div class="col-lg-4 text-center custom-radio-port">';
+    echo '<input id="radio2" type="radio" name="pick-up" value="Port" class="custom-radio">';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_port_field', 16 );
+
+  function add_location_in_port_text_field() {
+    echo '<div class="reveal-if-active">
+    <textarea name="pick-up-airport" class="input-text form-control require-if-active port-position" data-require-pair="#pick-up-hotel" id="order_comments" placeholder="Boat Name" rows="4" cols="5"></textarea>
+    </div>
+    </div>';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_port_text_field', 17 );
+
+
+
+  function add_location_in_custom_field() {
+    echo '<div class="col-lg-4 text-center custom-radio-location">';
+    echo '<input id="radio1" type="radio" name="pick-up" value="other_location" class="custom-radio">';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_custom_field', 18 );
+
+  function add_location_in_custom_text_field() {
+    echo '<div class="reveal-if-active">
+    <textarea name="pick-up" class="input-text form-control require-if-active location-position" data-require-pair="#pick-up-hotel" id="order_comments" placeholder="" rows="4" cols="5"></textarea>
+    </div>
+    </div>';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_custom_text_field', 19 );
+
+
+
+  function add_location_in_end_field() {
+    echo '</div>';
+    echo '</div>';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_in_end_field', 20 );
+
+
+
+    function add_location_out_start_field() {
+      echo '<div class="col-lg-6">';
+      echo '<div class="row form-group">';
+    }
+    add_action( 'woocommerce_before_add_to_cart_button', 'add_location_out_start_field', 21 );
+
+  function add_location_out_end_field() {
+    echo '</div>';
+    echo '</div>';
+    //echo '</div>';
+  }
+  add_action( 'woocommerce_before_add_to_cart_button', 'add_location_out_end_field', 22 );
 
  function add_your_first_name_field() {
    echo '<div class="col-lg-6">';
@@ -153,7 +230,7 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
      echo '<input name="your-first-name" type="text" class="form-control" id="inputName" placeholder="Your First Name" required>';
  echo '</div>';
  }
- add_action( 'woocommerce_before_add_to_cart_button', 'add_your_first_name_field', 20 );
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_first_name_field', 23 );
 
  function add_your_last_name_field() {
  echo '<div class="col-lg-6">';
@@ -163,7 +240,7 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
  echo '</div>';
  //echo '</div>';
  }
- add_action( 'woocommerce_before_add_to_cart_button', 'add_your_last_name_field', 21 );
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_last_name_field', 24 );
 
 
  function add_your_email_field() {
@@ -172,7 +249,7 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
      echo '<input type="email" name="your-email" placeholder="email" value="" />';
  echo '</div>';
  }
- add_action( 'woocommerce_before_add_to_cart_button', 'add_your_email_field', 22 );
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_email_field', 25 );
 
  function add_your_phone_field() {
  echo '<div class="col-lg-6">';
@@ -181,7 +258,7 @@ add_action ('woocommerce_before_single_product_summary', 'woocommerce_template_s
    echo '<input type="text" name="your-phone" placeholder="Phone" value="" />';
  echo '</div>';
  }
- add_action( 'woocommerce_before_add_to_cart_button', 'add_your_phone_field', 23 );
+ add_action( 'woocommerce_before_add_to_cart_button', 'add_your_phone_field', 26 );
 
 
 
@@ -246,7 +323,6 @@ function save_intime_field( $cart_item_data, $product_id ) {
     return $cart_item_data;
 }
 add_action( 'woocommerce_add_cart_item_data', 'save_intime_field', 10, 7 );
-
 
  function render_on_cart_and_checkout_your_first_name( $cart_data, $cart_item = null ) {
      $custom_items = array();
@@ -316,10 +392,6 @@ function render_on_cart_and_checkout_in_time( $cart_data, $cart_item = null ) {
 }
 
 add_filter( 'woocommerce_get_item_data', 'render_on_cart_and_checkout_in_time', 10, 6 );
-
-
-
-
 
 
  if ( ! function_exists( 'woocommerce_template_single_name' ) ) {
